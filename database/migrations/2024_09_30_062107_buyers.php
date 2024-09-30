@@ -14,15 +14,15 @@ return new class extends Migration {
             $table->id();
             $table->string("name");
             $table->string("surname");
-            $table->string("eate_of_Birth");
-            $this->date("ereated_at");
-            $this->date("epdated_at");
-            $this->date("eserPicture");
-            $this->bool("eender");
-            $this->integer("ehone_number");
-            $this->string("email_address");
-            $this->string("Country");
-            $this->integer("Bought_Items");
+            $table->string("date_of_Birth");
+            $table->date("created_at");
+            $table->date("updated_at");
+            $table->date("userPicture");
+            $table->boolean("eender");
+            $table->integer("phone_number");
+            $table->string("email_address");
+            $table->string("Country");
+            $table->integer("Bought_Items");
         });
     }
 
