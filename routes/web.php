@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ProductController;
+
 use App\Http\Controllers\CartController;
 
 Route::get('/', function () {
@@ -20,31 +20,22 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Authentication routes...
-Route::middleware(['auth'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Product routes...
-Route::middleware(['auth'])->group(function () {
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::patch('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+// Prieks cart nākotnē - KK
+// Route::post('/cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+//     Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
+//     Route::post('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+//     Route::get('/checkout', [StripePaymentController::class, 'handleCheckout'])->name('checkout.handle');
 
-    // Apply EnsureProductOwner middleware to update and destroy routes
-    Route::middleware(['EnsureProductOwner'])->group(function () {
-        Route::patch('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-    });
-});
-
-// Cart routes...
+// Cart routings - piekluve tikai caur login
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
 });
+
+
+require __DIR__.'/auth.php';
