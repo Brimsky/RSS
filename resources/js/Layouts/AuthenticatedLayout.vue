@@ -147,9 +147,18 @@ const showingNavigationDropdown = ref(false);
             </div>
         </nav>
 
+<<<<<<< HEAD
         <!-- Page Content -->
         <main>
             <slot />
         </main>
+=======
+
+            <!-- Page Content -->
+            <main>
+                <slot />
+            </main>
+        </div>
+>>>>>>> 8d6244c0ff4233fdd7463bd0e87c923f16e3bac3
     </div>
 </template>
