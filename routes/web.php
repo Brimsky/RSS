@@ -40,7 +40,11 @@ Route::middleware(['auth'])->group(function () {
 // Cart routings - accessible only via login
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 });
+
 
 // Future cart routes
 // Route::post('/cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
