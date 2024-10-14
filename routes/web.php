@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 
 Route::get('/', function () {
@@ -26,26 +26,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-use App\Http\Controllers\ProductController;
-
 // Ensure this is inside your auth middleware group
 Route::middleware(['auth'])->group(function () {
-    // Route to view all products (GET)
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-
-    // Route to create a new product (GET)
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-
-    // Route to store a new product (POST)
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-
-    // Route to edit a product (GET)
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-
-    // Route to update a product (PUT/PATCH)
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-
-    // Route to delete a product (DELETE)
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
