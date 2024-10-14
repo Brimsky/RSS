@@ -101,7 +101,7 @@
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Inertia } from '@inertiajs/inertia'; // Import Inertia for navigation
+import { router } from '@inertiajs/vue3'; // Import Inertia for navigation
 
 // Accept cartItems as a prop
 const props = defineProps({
@@ -134,12 +134,12 @@ const handleStripePayment = () => {
 
 const updateQuantity = async (productId, quantity) => {
   // Update the quantity in the backend
-  await Inertia.post(route('cart.update'), { product_id: productId, quantity });
+  await router.post(route('cart.update'), { product_id: productId, quantity });
 };
 
 const removeItem = async (productId) => {
   if (confirm('Are you sure you want to remove this item from the cart?')) {
-    await Inertia.post(route('cart.remove'), { product_id: productId }, {
+    await router.post(route('cart.remove'), { product_id: productId }, {
       preserveState: false,
       onSuccess: () => {
         // Optionally, handle any additional logic here
