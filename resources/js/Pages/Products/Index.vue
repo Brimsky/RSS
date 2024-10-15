@@ -155,7 +155,7 @@
                     <tbody>
                         <tr v-for="product in products" :key="product.id">
                             <td>{{ product.name }}</td>
-                            <td>{{ parseFloat(product.price).toFixed(2) }}</td>
+                            <td>{{ '$' + parseFloat(product.price).toFixed(2) }}</td>
                             <td>{{ product.description }}</td>
                             <td>
                                 <a :href="`/products/${product.id}/edit`" class="btn btn-warning">Edit</a>
@@ -168,8 +168,6 @@
         </div>
     </div>
 </template>
-
-
 
 <script setup>
 import { ref } from 'vue';
@@ -197,7 +195,6 @@ export default {
     },
 };
 </script>
-
 
 <style scoped>
 .container {
