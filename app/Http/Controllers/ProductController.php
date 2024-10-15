@@ -20,8 +20,16 @@ class ProductController extends Controller
         return Inertia::render('Products/Index', [
             'products' => $products,
         ]);
+        
     }
 
+    public function dashboard()
+    {
+        $products = Product::all(); // Fetch the same products
+        return Inertia::render('Dashboard', [
+            'products' => $products,
+        ]);
+    }
     /**
      * Show the form for creating a new product.
      */
