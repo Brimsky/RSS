@@ -160,6 +160,7 @@
                             <td>
                                 <a :href="`/products/${product.id}/edit`" class="btn btn-warning">Edit</a>
                                 <button @click="deleteProduct(product.id)" class="btn btn-danger">Delete</button>
+                                <button @click="addToCart(product)" class="btn btn-primary">Add to Cart</button>
                             </td>
                         </tr>
                     </tbody>
@@ -191,6 +192,10 @@ export default {
             if (confirm("Are you sure you want to delete this product?")) {
                 await this.$inertia.delete(`/products/${id}`);
             }
+        },
+        async addToCart(product) {
+            await this.$inertia.post('/cart/add', { product_id: product.id });
+            alert('Product added to cart!');
         },
     },
 };

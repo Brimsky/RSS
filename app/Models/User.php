@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Http\UploadedFile;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -43,5 +47,27 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+ 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+             ->singleFile()
+             ->useDisk('public');
+    }
+
+    public function addAvatar(UploadedFile $file): void
+    {
+        $this->addMedia($file)
+             ->usingName($this->name . '_avatar')
+             ->usingFileName(time() . '_' . $file->getClientOriginalName())
+             ->toMediaCollection('avatar', 'public');
+    }
+
+    public function getAvatarUrl(): string
+    {
+        $media = $this->getFirstMedia('avatar');
+        return $media ? $media->getFullUrl() : '';
     }
 }
