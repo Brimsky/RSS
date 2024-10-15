@@ -33,7 +33,7 @@ const submitForm = async () => {
         <h1 class="page-title">Add New Product</h1>
 
         <!-- Form for adding a new product -->
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm" class="product-form">
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
                 <input
@@ -41,6 +41,7 @@ const submitForm = async () => {
                     type="text"
                     id="name"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter product name"
                     required
                 />
             </div>
@@ -53,6 +54,7 @@ const submitForm = async () => {
                     step="0.01"
                     id="price"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter product price"
                     required
                 />
             </div>
@@ -63,6 +65,7 @@ const submitForm = async () => {
                     v-model="form.description"
                     id="description"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter product description"
                     required
                 ></textarea>
             </div>
@@ -92,33 +95,50 @@ const submitForm = async () => {
 
 <style scoped>
 .container {
-    max-width: 1200px;
-    margin: 40px auto;
+    max-width: 600px;
+    margin: 50px auto;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .page-title {
     text-align: center;
     margin-bottom: 20px;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
     color: #333;
+}
+
+.product-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.mb-4 {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
 }
 
 .btn-primary {
     background-color: #007bff;
     color: white;
-    padding: 10px 20px;
+    padding: 12px;
     border-radius: 5px;
-    display: inline-block;
-    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 .btn-primary:hover {
     background-color: #0056b3;
+    transform: translateY(-1px);
 }
 
 .btn-secondary {

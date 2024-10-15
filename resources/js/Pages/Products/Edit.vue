@@ -37,37 +37,37 @@ const submitForm = async () => {
 
         <!-- Form for editing product -->
         <form @submit.prevent="submitForm" class="product-form">
-            <div class="form-group">
-                <label for="name">Name:</label>
+            <div class="mb-4">
+                <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
                 <input
                     v-model="form.name"
                     type="text"
                     id="name"
-                    class="form-control"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter product name"
                     required
                 />
             </div>
 
-            <div class="form-group">
-                <label for="description">Description:</label>
+            <div class="mb-4">
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
                     v-model="form.description"
                     id="description"
-                    class="form-control"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter product description"
                     required
                 ></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="price">Price:</label>
+            <div class="mb-4">
+                <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
                 <input
                     v-model="form.price"
                     type="number"
                     step="0.01"
                     id="price"
-                    class="form-control"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter product price"
                     required
                 />
@@ -76,7 +76,7 @@ const submitForm = async () => {
             <!-- Submit button -->
             <button
                 type="submit"
-                class="btn-submit"
+                class="btn btn-primary"
                 :disabled="form.processing"
             >
                 Update Product
@@ -91,7 +91,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Back to Products button -->
-            <Link href="/products" class="btn-secondary mt-4">Back to Products</Link>
+            <Link href="/products" class="btn btn-secondary mt-4">Back to Products</Link>
         </div>
     </div>
 </template>
@@ -119,7 +119,7 @@ const submitForm = async () => {
     flex-direction: column;
 }
 
-.form-group {
+.mb-4 {
     margin-bottom: 20px;
 }
 
@@ -144,19 +144,18 @@ label {
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-.btn-submit {
-    padding: 12px;
-    background-color: #28a745;
+.btn-primary {
+    background-color: #007bff;
     color: white;
-    border: none;
+    padding: 12px;
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
 }
 
-.btn-submit:hover {
-    background-color: #218838;
+.btn-primary:hover {
+    background-color: #0056b3;
     transform: translateY(-1px);
 }
 
