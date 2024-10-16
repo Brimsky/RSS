@@ -156,31 +156,60 @@
           </div>
   
           <!-- Delivery Service Selection -->
-          <div class="mt-8">
-            <h2 class="text-2xl font-semibold mb-4">Choose Your Delivery Service</h2>
-            <div class="flex space-x-4">
-              <button class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700">Standard Delivery</button>
-              <button class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700">Express Delivery</button>
-              <button class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">Same-Day Delivery</button>
+            <div class="mt-8">
+                <h2 class="text-2xl font-semibold mb-4">Choose Your Delivery Service</h2>
+                <div class="flex space-x-4">
+                <button @click="openModal('standard')" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700">
+                    Standard Delivery
+                </button>
+                <button @click="openModal('express')" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700">
+                    Express Delivery
+                </button>
+                <button @click="openModal('sameDay')" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
+                    Same-Day Delivery
+                </button>
+                </div>
             </div>
-          </div>
+
+            <!-- Modal for displaying delivery information -->
+            <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                <h3 class="text-xl font-semibold mb-4">{{ modalTitle }}</h3>
+                <p class="mb-6">{{ modalContent }}</p>
+                <button @click="closeModal" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700">
+                    Close
+                </button>
+                </div>
+            </div>
   
           <!-- Subscribe to Delivery Updates -->
-          <div class="mt-8">
-            <h3 class="text-xl font-semibold mb-4">Get Delivery Updates</h3>
-            <input
-              v-model="email"
-              type="email"
-              class="border rounded py-2 px-4"
-              placeholder="Enter your email"
-            />
-            <button
-              @click="subscribeToUpdates"
-              class="ml-4 bg-indigo-500 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700"
-            >
-              Subscribe
-            </button>
-          </div>
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold mb-4">Get Delivery Updates</h3>
+                <input
+                v-model="email"
+                type="email"
+                class="border rounded py-2 px-4"
+                placeholder="Enter your email"
+                />
+                <button
+                @click="subscribeToUpdates"
+                class="ml-4 bg-indigo-500 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700"
+                >
+                Subscribe
+                </button>
+                <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
+            </div>
+
+            <!-- Confirmation Modal -->
+            <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                <h3 class="text-xl font-semibold mb-4">Subscription Confirmed</h3>
+                <p class="mb-6">You have successfully subscribed to delivery updates with the email: {{ email }}</p>
+                <button @click="closeDeliveryModal" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700">
+                Close
+                </button>
+                </div>
+            </div>
         </div>
       </div>
     </div>
@@ -194,6 +223,7 @@
   import NavLink from '@/Components/NavLink.vue';
   import { Link } from '@inertiajs/vue3';
   
+  const isModalOpen = ref(false);
   const showingNavigationDropdown = ref(false);
   const location = ref('');
   const deliveryCost = ref(null);
@@ -201,7 +231,10 @@
   const orderNumber = ref('');
   const trackingInfo = ref(null);
   const email = ref('');
-  
+  const error = ref('');
+  const modalTitle = ref('');
+  const modalContent = ref('');
+
   const calculateDelivery = () => {
     if (location.value === 'New York') {
       deliveryCost.value = 10;
@@ -226,9 +259,44 @@
     }
   };
   
-  const subscribeToUpdates = () => {
-    alert(`Subscribed to updates with email: ${email.value}`);
-  };
+    function openModal(service) {
+    isModalOpen.value = true;
+    if (service === 'standard') {
+        modalTitle.value = 'Standard Delivery';
+        modalContent.value = 'Standard delivery takes 3-5 business days.';
+    } else if (service === 'express') {
+        modalTitle.value = 'Express Delivery';
+        modalContent.value = 'Express delivery ensures that your package arrives within 1-2 business days.';
+    } else if (service === 'sameDay') {
+        modalTitle.value = 'Same-Day Delivery';
+        modalContent.value = 'Same-day delivery is available for orders placed before noon.';
+    }
+    }
+
+    function closeModal() {
+    isModalOpen.value = false;
+    modalTitle.value = '';
+    modalContent.value = '';
+    }
+
+        const subscribeToUpdates = () => {
+    if (validateEmail(email.value)) {
+        error.value = '';  // Clear previous error if email is valid
+        isModalOpen.value = true;  // Open modal to confirm subscription
+    } else {
+        error.value = 'Please enter a valid email address.';
+    }
+    };
+
+        const closeDeliveryModal = () => {
+    isModalOpen.value = false;
+    email.value = '';  // Clear email after subscription
+    };
+
+    function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+    }
   </script>
   
   <style scoped>
@@ -260,5 +328,10 @@
     height: 300px;
     background-color: #f0f0f0;
   }
+
+  /* Additional styling for modal */
+    .fixed {
+    z-index: 50;
+    }
   </style>
   
