@@ -20,11 +20,22 @@ class ProductController extends Controller
         return Inertia::render('Products/Index', [
             'products' => $products,
         ]);
+        
     }
 
-    /**
-     * Show the form for creating a new product.
-     */
+    public function dashboard()
+    {
+
+        $userId = auth()->id();
+        $products = Product::where('user_id', $userId)->get();
+
+        // Pass the filtered products to the Inertia view
+        return Inertia::render('Dashboard', [
+            'products' => $products,
+        ]);
+    }
+    
+
     public function create()
     {
         return Inertia::render('Products/Create');

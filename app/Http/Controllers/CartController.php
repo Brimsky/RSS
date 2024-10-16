@@ -6,20 +6,25 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Inertia\Inertia;
 
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
+use Illuminate\Http\JsonResponse;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Checkout\Session;
+
 
 class CartController extends Controller
 {
-    // Display the cart contents
+    // Izvada grozu
     public function index()
     {
         $cartItems = session()->get('cart', []);
         return inertia('Cart', ['cartItems' => $cartItems]);
     }
 
-    // Add a product to the cart
+    // Pievienot produktu grozā
     public function add(Request $request)
     {
-        // Validate the incoming request
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
         ]);
@@ -27,15 +32,12 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $product = Product::findOrFail($productId);
 
-        // Retrieve the cart from the session; ensure it's an array
         $cart = session()->get('cart', []);
         if (!is_array($cart)) {
             $cart = [];
         }
 
-        // Check if the product is already in the cart
         if (isset($cart[$productId])) {
-            // Ensure 'quantity' is set and is numeric
             if (!isset($cart[$productId]['quantity']) || !is_numeric($cart[$productId]['quantity'])) {
                 $cart[$productId]['quantity'] = 0;
             }
@@ -44,23 +46,20 @@ class CartController extends Controller
             $cart[$productId] = [
                 "id"          => $product->id,
                 "name"        => $product->name,
-                "quantity"    => 1, // Initialize quantity to 1
+                "quantity"    => 1, 
                 "price"       => $product->price,
                 "description" => $product->description,
-                // Add more fields if needed
             ];
         }
 
-        // Save the cart back to the session
         session()->put('cart', $cart);
 
         return redirect()->back()->with('success', 'Product added to cart!');
     }
 
-    // Update cart item quantity
+    // Daudzumu atjaunot
     public function update(Request $request)
     {
-        // Validate the incoming request
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
             'quantity'   => 'required|integer|min:1',
@@ -75,15 +74,13 @@ class CartController extends Controller
             session()->put('cart', $cart);
         }
 
-        // Return a 303 redirect
         return redirect()->back(303)->with('success', 'Cart updated!');
     }
 
 
-    // Remove a product from the cart
+    // Noņemt produktu
     public function remove(Request $request)
     {
-        // Validate the incoming request
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
         ]);
@@ -97,5 +94,37 @@ class CartController extends Controller
         }
 
         return redirect()->route('cart')->with('success', 'Product removed from cart!');
+    }
+
+    // Stripe
+    public function createCheckoutSession(Request $request)
+    {
+        Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+    
+        $cartItems = $request->input('items');
+    
+        $lineItems = [];
+        foreach ($cartItems as $item) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'usd',
+                    'product_data' => [
+                        'name' => $item['name'],
+                    ],
+                    'unit_amount' => $item['price'] * 100, // Convert to cents
+                ],
+                'quantity' => $item['quantity'],
+            ];
+        }
+    
+        $checkoutSession = Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [$lineItems],
+            'mode' => 'payment',
+            'success_url' => url('/checkout/success'),
+            'cancel_url' => url('/checkout/cancel'),
+        ]);
+    
+        return response()->json(['id' => $checkoutSession->id]);
     }
 }

@@ -1,17 +1,13 @@
 <!-- resources/js/Pages/Cart.vue -->
 <template>
   <Head title="My Cart" />
-
   <AuthenticatedLayout>
     <div class="container mx-auto p-4">
       <h1 class="text-2xl font-bold mb-4">
         <span class="inline-block align-middle mr-2">
-          <!-- SVG Icon -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  stroke-width="2" d="M16 11V7a4 4 0 00-8
-                  0v4M5 9h14l1 12H4L5 9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
           </svg>
         </span>
         My Cart
@@ -25,22 +21,12 @@
             :key="productId"
             class="flex items-center border-b py-4"
           >
-            <!-- Product Image (Optional) -->
-            <!-- Uncomment if you have images -->
-            <!--
-            <img
-              :src="item.image"
-              :alt="item.name"
-              class="w-24 h-32 object-cover mr-4"
-            />
-            -->
             <div class="flex-grow">
               <h2 class="font-semibold">{{ item.name }}</h2>
               <p>{{ item.description }}</p>
               <p>In Stock</p>
               <div class="mt-2">
                 <a href="#" @click.prevent="removeItem(productId)" class="text-blue-600 mr-2">Remove</a>
-                <!-- Additional actions can be added here -->
               </div>
             </div>
             <div class="text-right">
@@ -87,7 +73,7 @@
             <p class="text-sm text-yellow-600 mt-2">
               You're $10.01 away from free shipping!
             </p>
-            <button @click="handleStripePayment" class="w-full bg-blue-500 text-white font-semibold py-2 rounded mt-4">
+            <button @click="redirectToStripeCheckout" class="w-full bg-blue-500 text-white font-semibold py-2 rounded mt-4">
               Pay with Stripe
             </button>
           </div>
@@ -98,10 +84,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { router } from '@inertiajs/vue3'; // Import Inertia for navigation
+import { router } from '@inertiajs/vue3';
+import { loadStripe } from '@stripe/stripe-js';
 
 // Accept cartItems as a prop
 const props = defineProps({
@@ -123,37 +110,57 @@ const totalPrice = () =>
 
 // Methods
 const submitPromoCode = () => {
-  // Handle promo code submission (to be implemented)
   console.log('Promo code submitted:', promoCode.value);
 };
 
-const handleStripePayment = () => {
-  // Placeholder function for Stripe payment integration
-  console.log('Initiating Stripe payment for $', totalPrice().toFixed(2));
-};
-
 const updateQuantity = async (productId, quantity) => {
-  // Update the quantity in the backend
   await router.post(route('cart.update'), { product_id: productId, quantity });
 };
 
 const removeItem = async (productId) => {
   if (confirm('Are you sure you want to remove this item from the cart?')) {
-    await router.post(route('cart.remove'), { product_id: productId }, {
-      preserveState: false,
-      onSuccess: () => {
-        // Optionally, handle any additional logic here
-      },
-    });
+    await router.post(route('cart.remove'), { product_id: productId });
   }
 };
 
+// Load Stripe
+let stripe;
+onMounted(async () => {
+  stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+});
+
+// Redirect to Stripe Checkout
+const redirectToStripeCheckout = async () => {
+  try {
+    // Make an API call to the server to create a Checkout Session
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      },
+      body: JSON.stringify({
+        items: props.cartItems,
+      }),
+    });
+
+    const session = await response.json();
+
+    // Redirect to Stripe Checkout
+    const { error } = await stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (error) {
+      console.error('Stripe Checkout error:', error);
+    }
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+  }
+};
 </script>
 
 <style scoped>
-/* Add your custom styles here */
-
-/* Example styles for the cart */
 .container {
   max-width: 1200px;
 }

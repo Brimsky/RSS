@@ -19,14 +19,16 @@
                             </div>
                             <div class="flex items-center space-x-6">
                                 <div class="text-center bg-gray-100 p-4 rounded-lg">
-                                    <div class="text-5xl font-bold mb-2">0</div>
+                                    <div class="text-5xl font-bold mb-2">{{ products.length }}</div>
                                     <div class="text-lg">Active</div>
                                 </div>
                                 <div class="space-y-4 flex-grow">
-                                    <button class="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition duration-300">
-                                        <span class="text-2xl">+</span>
-                                        <span>Create new listing</span>
-                                    </button>
+                                    <a href="products/create">
+                                        <button class="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition duration-300">
+                                            <span class="text-2xl">+</span>
+                                            <span>Create new listing</span>
+                                        </button>
+                                    </a>
                                     <button class="w-full flex items-center justify-center space-x-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg text-lg hover:bg-gray-300 transition duration-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -37,18 +39,27 @@
                             </div>
                         </div>
 
-                        <!-- Active Listings -->
-                        <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 space-y-6">
-                            <div v-for="(listing, index) in activeListings" :key="index" class="flex items-center space-x-4 border-b pb-4 last:border-b-0 last:pb-0">
-                                <img :src="listing.image" :alt="listing.name" class="w-24 h-24 object-cover rounded-lg">
-                                <div class="flex-grow">
-                                    <h3 class="text-xl font-semibold">{{ listing.name }}</h3>
-                                    <p class="text-2xl font-bold text-gray-700">{{ listing.price }} €</p>
+                        <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 relative">
+                            <div class="space-y-6 mb-16"> <!-- Added mb-16 for space at the bottom -->
+                                <div v-for="(product, index) in limitedProducts" :key="product.id" class="flex items-center space-x-4 border-b pb-4 last:border-b-0 last:pb-0">
+                                    <!-- Image placeholder (if products have images) -->
+                                    <img src="https://via.placeholder.com/100" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
+                                    
+                                    <!-- Product details -->
+                                    <div class="flex-grow">
+                                        <h3 class="text-xl font-semibold">{{ product.name }}</h3>
+                                        <p class="text-2xl font-bold text-gray-700">${{ parseFloat(product.price).toFixed(2) }}</p>
+                                        <p class="text-gray-500">{{ product.description }}</p>
+                                    </div>
+                                    <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">Mark as sold</button>
                                 </div>
-                                <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">Mark as sold</button>
                             </div>
+                            <a href="/products" class="absolute bottom-6 right-6 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">
+                                View all
+                            </a>
                         </div>
                     </div>
+                
 
                     <!-- Marketplace Insights -->
                     <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6">
@@ -83,11 +94,16 @@
 
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed  } from 'vue';
 
-const activeListings = [
-    { name: 'Nintendo NES', price: 200, image: '/path-to-nes-image.jpg' },
-    { name: 'Racing Simulators', price: 300, image: '/path-to-racing-image.jpg' },
-    { name: 'Apple watch 4 pro', price: 5000, image: '/path-to-watch-image.jpg' },
-];
+const props = defineProps({
+  products: Array
+});
+
+const limit = ref(3); // Number of products to display
+
+const limitedProducts = computed(() => {
+  return props.products.slice(0, limit.value);
+});
 </script>

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -28,6 +29,9 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['patch', 'post'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/dashboard', [ProductController::class, 'dashboard'])->name('dashboard');
+
+
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
@@ -35,11 +39,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
-// Prieks cart nākotnē - KK
-// Route::post('/cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-//     Route::get('/cart', [CartController::class, 'showCart'])->name('cart.show');
-//     Route::post('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
-//     Route::get('/checkout', [StripePaymentController::class, 'handleCheckout'])->name('checkout.handle');
 
 // Cart routings - accessible only via login
 Route::middleware(['auth'])->group(function () {
@@ -47,6 +46,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    // Stripe API sessija
+    Route::post('/api/create-checkout-session', [CartController::class, 'createCheckoutSession']);
+
+    // Darījuma rezultāta lapas
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+
 });
 
 
