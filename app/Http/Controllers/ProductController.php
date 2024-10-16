@@ -25,14 +25,17 @@ class ProductController extends Controller
 
     public function dashboard()
     {
-        $products = Product::all(); // Fetch the same products
+
+        $userId = auth()->id();
+        $products = Product::where('user_id', $userId)->get();
+
+        // Pass the filtered products to the Inertia view
         return Inertia::render('Dashboard', [
             'products' => $products,
         ]);
     }
-    /**
-     * Show the form for creating a new product.
-     */
+    
+
     public function create()
     {
         return Inertia::render('Products/Create');

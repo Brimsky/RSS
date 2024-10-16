@@ -19,7 +19,7 @@
                             </div>
                             <div class="flex items-center space-x-6">
                                 <div class="text-center bg-gray-100 p-4 rounded-lg">
-                                    <div class="text-5xl font-bold mb-2">0</div>
+                                    <div class="text-5xl font-bold mb-2">{{ products.length }}</div>
                                     <div class="text-lg">Active</div>
                                 </div>
                                 <div class="space-y-4 flex-grow">
@@ -39,21 +39,25 @@
                             </div>
                         </div>
 
-                        <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 space-y-6">
-                            <div v-for="(product, index) in products" :key="product.id" class="flex items-center space-x-4 border-b pb-4 last:border-b-0 last:pb-0">
-                                <!-- Image placeholder (if products have images) -->
-                                <img src="https://via.placeholder.com/100" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
-                                
-                                <!-- Product details -->
-                                <div class="flex-grow">
-                                    <h3 class="text-xl font-semibold">{{ product.name }}</h3>
-                                    <p class="text-2xl font-bold text-gray-700">${{ parseFloat(product.price).toFixed(2) }}</p>
-                                    <p class="text-gray-500">{{ product.description }}</p>
+                        <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 relative">
+                            <div class="space-y-6 mb-16"> <!-- Added mb-16 for space at the bottom -->
+                                <div v-for="(product, index) in limitedProducts" :key="product.id" class="flex items-center space-x-4 border-b pb-4 last:border-b-0 last:pb-0">
+                                    <!-- Image placeholder (if products have images) -->
+                                    <img src="https://via.placeholder.com/100" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
+                                    
+                                    <!-- Product details -->
+                                    <div class="flex-grow">
+                                        <h3 class="text-xl font-semibold">{{ product.name }}</h3>
+                                        <p class="text-2xl font-bold text-gray-700">${{ parseFloat(product.price).toFixed(2) }}</p>
+                                        <p class="text-gray-500">{{ product.description }}</p>
+                                    </div>
+                                    <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">Mark as sold</button>
                                 </div>
-                                <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">Mark as sold</button>
                             </div>
+                            <a href="/products" class="absolute bottom-6 right-6 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">
+                                View all
+                            </a>
                         </div>
-
                     </div>
                 
 
@@ -91,15 +95,15 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed  } from 'vue';
 
-const activeListings = [
-    { name: 'Nintendo NES', price: 200, image: '/path-to-nes-image.jpg' },
-    { name: 'Racing Simulators', price: 300, image: '/path-to-racing-image.jpg' },
-    { name: 'Apple watch 4 pro', price: 5000, image: '/path-to-watch-image.jpg' },
-];
+const props = defineProps({
+  products: Array
+});
 
-defineProps({
-    products: Array
-  });
+const limit = ref(3); // Number of products to display
+
+const limitedProducts = computed(() => {
+  return props.products.slice(0, limit.value);
+});
 </script>
