@@ -19,7 +19,12 @@
                     </thead>
                     <tbody>
                         <tr v-for="product in products" :key="product.id">
-                            <td class="font-semibold">{{ product.name }}</td>
+                            <!-- Link to the product details page -->
+                            <td class="font-semibold">
+                                <a :href="`/products/${product.id}`" class="text-blue-600 hover:underline">
+                                    {{ product.name }}
+                                </a>
+                            </td>
                             <td>${{ parseFloat(product.price).toFixed(2) }}</td>
                             <td>{{ product.description }}</td>
                             <td class="text-right">
@@ -37,10 +42,11 @@
 
 <script setup>
 import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
+// Handle dropdown and other UI elements
 const showingNavigationDropdown = ref(false);
+
 </script>
 
 <script>
@@ -49,11 +55,13 @@ export default {
         products: Array,
     },
     methods: {
+        // Delete product from the list
         async deleteProduct(id) {
             if (confirm("Are you sure you want to delete this product?")) {
                 await this.$inertia.delete(`/products/${id}`);
             }
         },
+        // Add product to the cart
         async addToCart(product) {
             await this.$inertia.post('/cart/add', { product_id: product.id });
             alert('Product added to cart!');
@@ -63,6 +71,7 @@ export default {
 </script>
 
 <style scoped>
+/* Container styling */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -77,6 +86,7 @@ h1 {
     align-items: center;
 }
 
+/* Button styling */
 .btn {
     display: inline-block;
     padding: 0.5rem 1rem;
@@ -115,6 +125,7 @@ h1 {
     background-color: #e53e3e;
 }
 
+/* Table styling */
 .table {
     width: 100%;
     border-collapse: separate;
@@ -139,6 +150,7 @@ h1 {
     background-color: #f7fafc;
 }
 
+/* Layout styling */
 .flex {
     display: flex;
 }
@@ -163,9 +175,17 @@ h1 {
     font-weight: 600;
 }
 
+.text-blue-600 {
+    color: #4299e1;
+}
+
+.text-blue-600:hover {
+    text-decoration: underline;
+}
+
 .inline-flex {
-    border: none; 
-    outline: none; 
+    border: none;
+    outline: none;
 }
 
 button {
