@@ -10,6 +10,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Fonts -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
@@ -17,6 +18,7 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     </head>
     <body class="font-sans antialiased">
         @inertia

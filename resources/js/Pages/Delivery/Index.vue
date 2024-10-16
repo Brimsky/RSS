@@ -15,13 +15,7 @@
                 </div>
   
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                  <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                    Dashboard
-                  </NavLink>
-                  <NavLink :href="route('cart')" :active="route().current('cart')">Cart</NavLink>
-                  <NavLink :href="route('products.index')" :active="route().current('products.index')">Products</NavLink>
-                </div>
+                
               </div>
   
               <!-- Settings Dropdown -->
@@ -149,156 +143,235 @@
             </div>
           </div>
   
-          <!-- Find Pickup Points (Map placeholder) -->
-          <div class="pickup-map mt-8">
+                <!-- Find Pickup Points -->
+            <div class="pickup-map mt-8">
             <h3 class="text-xl font-semibold mb-4">Find a Pickup Point</h3>
-            <div id="map" class="w-full h-64 bg-gray-200"></div>
-          </div>
+            <input
+                v-model="location"
+                type="text"
+                class="border rounded py-2 px-4 mb-4"
+                placeholder="Enter city or ZIP code"
+            />
+            <button @click="findPickupPoints" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
+                Find Pickup Points
+            </button>
+            <div id="map" class="w-full h-64 bg-gray-200 mt-4"></div>
+            </div>
   
           <!-- Delivery Service Selection -->
-            <div class="mt-8">
-                <h2 class="text-2xl font-semibold mb-4">Choose Your Delivery Service</h2>
-                <div class="flex space-x-4">
-                <button @click="openModal('standard')" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700">
-                    Standard Delivery
-                </button>
-                <button @click="openModal('express')" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700">
-                    Express Delivery
-                </button>
-                <button @click="openModal('sameDay')" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
-                    Same-Day Delivery
-                </button>
-                </div>
+          <div class="mt-8">
+            <h2 class="text-2xl font-semibold mb-4">Choose Your Delivery Service</h2>
+            <div class="flex space-x-4">
+              <button @click="openModal('Standard Delivery')" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700">
+                Standard Delivery
+              </button>
+              <button @click="openModal('Express Delivery')" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700">
+                Express Delivery
+              </button>
+              <button @click="openModal('Same-Day Delivery')" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
+                Same-Day Delivery
+              </button>
             </div>
-
-            <!-- Modal for displaying delivery information -->
-            <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-                <h3 class="text-xl font-semibold mb-4">{{ modalTitle }}</h3>
-                <p class="mb-6">{{ modalContent }}</p>
-                <button @click="closeModal" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700">
-                    Close
-                </button>
-                </div>
+          </div>
+  
+          <!-- Modal Window -->
+          <div v-if="isModalOpen" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+              <h2 class="text-2xl font-bold mb-4">{{ modalTitle }}</h2>
+              <p>{{ modalContent }}</p>
+              <button @click="closeModal" class="mt-6 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+                Close
+              </button>
             </div>
+          </div>
   
           <!-- Subscribe to Delivery Updates -->
-            <div class="mt-8">
-                <h3 class="text-xl font-semibold mb-4">Get Delivery Updates</h3>
-                <input
-                v-model="email"
-                type="email"
-                class="border rounded py-2 px-4"
-                placeholder="Enter your email"
-                />
-                <button
-                @click="subscribeToUpdates"
-                class="ml-4 bg-indigo-500 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700"
-                >
+        <div class="mt-8">
+            <h3 class="text-xl font-semibold mb-4">Subscribe to Delivery Updates</h3>
+            <input v-model="email" type="email" class="border rounded py-2 px-4" placeholder="Enter your email" />
+            <button @click="subscribe" class="ml-4 bg-indigo-500 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700">
                 Subscribe
-                </button>
-                <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
-            </div>
+            </button>
+      
+            <p v-if="emailError" class="text-red-500 mt-2">{{ emailError }}</p>
 
-            <!-- Confirmation Modal -->
-            <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-                <h3 class="text-xl font-semibold mb-4">Subscription Confirmed</h3>
-                <p class="mb-6">You have successfully subscribed to delivery updates with the email: {{ email }}</p>
-                <button @click="closeDeliveryModal" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700">
-                Close
-                </button>
-                </div>
-            </div>
+            <div v-if="isSubscriptionModalOpen" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-4">Subscription Successful!</h2>
+          <p>Thank you for subscribing to delivery updates. We will keep you informed about your deliveries.</p>
+          <button @click="closeSubscriptionModal" class="mt-6 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+            Close
+          </button>
+        </div>
+      </div>
+          </div>
         </div>
       </div>
     </div>
   </template>
   
-  <script setup>
-  import { ref } from 'vue';
-  import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-  import Dropdown from '@/Components/Dropdown.vue';
-  import DropdownLink from '@/Components/DropdownLink.vue';
-  import NavLink from '@/Components/NavLink.vue';
-  import { Link } from '@inertiajs/vue3';
-  
-  const isModalOpen = ref(false);
-  const showingNavigationDropdown = ref(false);
-  const location = ref('');
-  const deliveryCost = ref(null);
-  const deliveryTime = ref(null);
-  const orderNumber = ref('');
-  const trackingInfo = ref(null);
-  const email = ref('');
-  const error = ref('');
-  const modalTitle = ref('');
-  const modalContent = ref('');
+  <script>
+    import ApplicationLogo from '@/Components/ApplicationLogo.vue'; 
+    import { Link, NavLink } from '@inertiajs/inertia-vue3';
+    import Dropdown from '@/Components/Dropdown.vue';
+    import DropdownLink from '@/Components/DropdownLink.vue';
 
-  const calculateDelivery = () => {
-    if (location.value === 'New York') {
-      deliveryCost.value = 10;
-      deliveryTime.value = 2;
-    } else {
-      deliveryCost.value = 20;
-      deliveryTime.value = 5;
-    }
-  };
-  
-  const trackOrder = () => {
-    if (orderNumber.value === '12345') {
-      trackingInfo.value = {
+export default {
+  data() {
+    return {
+      ApplicationLogo,
+      Link,
+      NavLink,
+      Dropdown,
+      DropdownLink,
+      location: '',         // For search and calculator
+      deliveryCost: null,
+      deliveryTime: null,
+      orderNumber: '',
+      trackingInfo: null,
+      isModalOpen: false,
+      modalTitle: '',
+      modalContent: '',
+      email: '',
+      emailError: '',
+      isSubscriptionModalOpen: false,
+      map: null,            // To store the map
+      markers: [],          // Markers for pickup points
+      pickupPoints: [       // Additional pickup points in different cities
+        { lat: 40.7128, lng: -74.006, name: 'Pickup Point 1 - New York' },
+        { lat: 40.730610, lng: -73.935242, name: 'Pickup Point 2 - Brooklyn' },
+        { lat: 40.6782, lng: -73.9442, name: 'Pickup Point 3 - Queens' },
+        { lat: 34.0522, lng: -118.2437, name: 'Pickup Point 1 - Los Angeles' }, 
+        { lat: 34.040713, lng: -118.246769, name: 'Pickup Point 2 - Los Angeles' }, 
+        { lat: 51.5074, lng: -0.1278, name: 'Pickup Point 1 - London' }, 
+        { lat: 51.5156, lng: -0.1410, name: 'Pickup Point 2 - London' }, 
+        { lat: 56.9496, lng: 24.1052, name: 'Pickup Point 1 - Riga, Latvia' }, 
+        { lat: 56.9489, lng: 24.1064, name: 'Pickup Point 2 - Riga, Latvia' }, 
+        { lat: 56.5113, lng: 21.0137, name: 'Pickup Point 1 - Liepaja, Latvia' }, 
+        { lat: 56.5187, lng: 21.0129, name: 'Pickup Point 2 - Liepaja, Latvia' }, 
+        { lat: 57.5360, lng: 25.4270, name: 'Pickup Point 1 - Valmiera, Latvia' }, 
+        { lat: 57.5352, lng: 25.4260, name: 'Pickup Point 2 - Valmiera, Latvia' }, 
+      ],
+    };
+  },
+
+  mounted() {
+    this.initMap(); // Initializing the Map When Mounting a Component
+  },
+
+  methods: {
+    calculateDelivery() {
+      // The logic of determining the minimum cost of delivery for Riga
+      if (this.location.toLowerCase() === 'riga') {
+        this.deliveryCost = (Math.random() * 10 + 5).toFixed(2); // Cheapest price for Riga (from 5 to 15)
+      } else {
+        this.deliveryCost = (Math.random() * 100).toFixed(2);    // Price for all others
+      }
+      this.deliveryTime = Math.floor(Math.random() * 5) + 1;
+    },
+    trackOrder() {
+      this.trackingInfo = {
         status: 'In Transit',
-        estimatedDelivery: '3 days',
+        estimatedDelivery: '2023-10-20',
       };
-    } else {
-      trackingInfo.value = {
-        status: 'Pending',
-        estimatedDelivery: '5 days',
-      };
-    }
-  };
-  
-    function openModal(service) {
-    isModalOpen.value = true;
-    if (service === 'standard') {
-        modalTitle.value = 'Standard Delivery';
-        modalContent.value = 'Standard delivery takes 3-5 business days.';
-    } else if (service === 'express') {
-        modalTitle.value = 'Express Delivery';
-        modalContent.value = 'Express delivery ensures that your package arrives within 1-2 business days.';
-    } else if (service === 'sameDay') {
-        modalTitle.value = 'Same-Day Delivery';
-        modalContent.value = 'Same-day delivery is available for orders placed before noon.';
-    }
-    }
+    },
+    openModal(serviceType) {
+      this.isModalOpen = true;
+      if (serviceType === 'Standard Delivery') {
+        this.modalTitle = 'Standard Delivery';
+        this.modalContent = 'Delivery within 3-5 business days.';
+      } else if (serviceType === 'Express Delivery') {
+        this.modalTitle = 'Express Delivery';
+        this.modalContent = 'Delivery within 1-2 business days.';
+      } else if (serviceType === 'Same-Day Delivery') {
+        this.modalTitle = 'Same-Day Delivery';
+        this.modalContent = 'Delivery on the same day if ordered before 12 PM.';
+      }
+    },
+    closeModal() {
+      this.isModalOpen = false;
+    },
+    validateEmail(email) {
+      const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return emailPattern.test(email);
+    },
+    subscribe() {
+      if (!this.validateEmail(this.email)) {
+        this.emailError = 'Please enter a valid email address.';
+        return;
+      }
+      this.emailError = '';
+      this.isSubscriptionModalOpen = true;
+    },
+    closeSubscriptionModal() {
+      this.isSubscriptionModalOpen = false;
+    },
+    
+    // Initializing a map using Leaflet.js and OpenStreetMap
+    initMap() {
+        this.map = L.map('map').setView([56.9496, 24.1052], 10); // Riga Centre
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(this.map);
 
-    function closeModal() {
-    isModalOpen.value = false;
-    modalTitle.value = '';
-    modalContent.value = '';
-    }
+      this.addPickupMarkers();
+    },
+    
+    // Adding markers to the map via Leaflet
+    addPickupMarkers() {
+    this.clearMarkers();
+    this.pickupPoints.forEach((point) => {
+    const marker = L.marker([point.lat, point.lng]).addTo(this.map);
+    
+    // Add an event listener for the marker to display a message when clicked
+    marker.on('click', () => {
+      alert(`You have selected: ${point.name}`);
+    });
 
-        const subscribeToUpdates = () => {
-    if (validateEmail(email.value)) {
-        error.value = '';  // Clear previous error if email is valid
-        isModalOpen.value = true;  // Open modal to confirm subscription
-    } else {
-        error.value = 'Please enter a valid email address.';
-    }
-    };
+    // Bind a popup to the marker that shows the pickup point name
+    marker.bindPopup(`<h3>${point.name}</h3>`);
+    
+    // Store the marker
+    this.markers.push(marker);
+    });
+    },
+    
+    // Clear all markers from the map
+    clearMarkers() {
+      this.markers.forEach(marker => this.map.removeLayer(marker));
+      this.markers = [];
+    },
 
-        const closeDeliveryModal = () => {
-    isModalOpen.value = false;
-    email.value = '';  // Clear email after subscription
-    };
+    findPickupPoints() {
+      const lowerCaseLocation = this.location.toLowerCase();
+      let centerCoords;
 
-    function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-    }
-  </script>
-  
+      // Logic of finding a city and changing the center of the map
+      if (lowerCaseLocation === 'new york') {
+        centerCoords = [40.7128, -74.006];
+      } else if (lowerCaseLocation === 'los angeles') {
+        centerCoords = [34.0522, -118.2437];
+      } else if (lowerCaseLocation === 'london') {
+        centerCoords = [51.5074, -0.1278];
+      } else if (lowerCaseLocation === 'riga') {
+        centerCoords = [56.9496, 24.1052];
+      } else if (lowerCaseLocation === 'liepaja') {
+        centerCoords = [56.5113, 21.0137];
+      } else if (lowerCaseLocation === 'valmiera') {
+        centerCoords = [57.5360, 25.4270];
+      } else {
+        alert('Pickup points not found for this location.');
+        return;
+      }
+
+      // Centering the map on the found coordinates
+      this.map.setView(centerCoords, 12);
+    },
+  },
+};
+</script>
+
+
   <style scoped>
   .container {
     max-width: 1200px;
@@ -324,14 +397,12 @@
   }
   
   #map {
-    width: 100%;
-    height: 300px;
-    background-color: #f0f0f0;
-  }
+  width: 100%;
+  height: 300px;
+}
 
   /* Additional styling for modal */
     .fixed {
     z-index: 50;
     }
   </style>
-  
