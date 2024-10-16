@@ -73,124 +73,125 @@ export default {
 <style scoped>
 /* Container styling */
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+    max-width: 1200px; /* Maximum width */
+    margin: 0 auto; /* Center the container */
+    padding: 2rem; /* Padding around container */
 }
 
+/* Header styling */
 h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
+    font-size: 2rem; /* Font size for header */
+    font-weight: bold; /* Font weight */
+    margin-bottom: 1rem; /* Space below the header */
+    display: flex; /* Flex display for alignment */
+    align-items: center; /* Center items vertically */
 }
 
 /* Button styling */
 .btn {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
+    display: inline-block; /* Inline block for buttons */
+    padding: 0.5rem 1rem; /* Padding for buttons */
+    border-radius: 0.25rem; /* Rounded corners */
+    font-weight: 600; /* Font weight */
+    text-decoration: none; /* Remove underline */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Transition effects */
 }
 
 .btn-primary {
-    background-color: #4299e1;
-    color: white;
+    background-color: #4299e1; /* Primary button color */
+    color: white; /* Text color */
 }
 
 .btn-primary:hover {
-    background-color: #3182ce;
-    transform: translateY(-1px);
+    background-color: #3182ce; /* Darker color on hover */
+    transform: translateY(-1px); /* Lift effect */
 }
 
 .btn-warning {
-    background-color: #ed8936;
-    color: white;
+    background-color: #ed8936; /* Warning button color */
+    color: white; /* Text color */
 }
 
 .btn-warning:hover {
-    background-color: #dd6b20;
+    background-color: #dd6b20; /* Darker color on hover */
 }
 
 .btn-danger {
-    background-color: #f56565;
-    color: white;
+    background-color: #f56565; /* Danger button color */
+    color: white; /* Text color */
 }
 
 .btn-danger:hover {
-    background-color: #e53e3e;
+    background-color: #e53e3e; /* Darker color on hover */
 }
 
 /* Table styling */
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 1rem;
+    width: 100%; /* Full width */
+    border-collapse: separate; /* Separate borders */
+    border-spacing: 0; /* No spacing */
+    margin-top: 1rem; /* Space above the table */
 }
 
 .table th,
 .table td {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid #e2e8f0;
+    padding: 0.75rem; /* Padding for cells */
+    vertical-align: top; /* Align to the top */
+    border-top: 1px solid #e2e8f0; /* Top border for cells */
 }
 
 .table th {
-    font-weight: 600;
-    text-align: left;
-    background-color: #f7fafc;
+    font-weight: 600; /* Font weight for headers */
+    text-align: left; /* Align text to the left */
+    background-color: #f7fafc; /* Header background */
 }
 
 .table tr:hover {
-    background-color: #f7fafc;
+    background-color: #f7fafc; /* Hover effect */
 }
 
 /* Layout styling */
 .flex {
-    display: flex;
+    display: flex; /* Flex display */
 }
 
 .justify-between {
-    justify-content: space-between;
+    justify-content: space-between; /* Space between items */
 }
 
 .items-center {
-    align-items: center;
+    align-items: center; /* Align items to the center */
 }
 
 .mt-4 {
-    margin-top: 1rem;
+    margin-top: 1rem; /* Top margin */
 }
 
 .text-right {
-    text-align: right;
+    text-align: right; /* Right alignment */
 }
 
 .font-semibold {
-    font-weight: 600;
+    font-weight: 600; /* Font weight */
 }
 
 .text-blue-600 {
-    color: #4299e1;
+    color: #4299e1; /* Blue color */
 }
 
 .text-blue-600:hover {
-    text-decoration: underline;
+    text-decoration: underline; /* Underline on hover */
 }
 
 .inline-flex {
-    border: none;
-    outline: none;
+    border: none; /* Remove border */
+    outline: none; /* Remove outline */
 }
 
 button {
-    border: none;
-    outline: none;
-    background: none;
+    border: none; /* Remove border */
+    outline: none; /* Remove outline */
+    background: none; /* Remove background */
 }
 </style>
