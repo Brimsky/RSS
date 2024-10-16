@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DeliveryController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -22,6 +23,9 @@ Route::get('/dashboard', function () {
 
 // Public product listing, accessible to anyone
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+// Public delivery page route
+Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery.index');
 
 // Ensure these routes are inside the auth middleware group to restrict actions
 Route::middleware(['auth'])->group(function () {
