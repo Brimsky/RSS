@@ -45,6 +45,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
   products: Array,
@@ -69,9 +70,23 @@ const deleteProduct = async (id) => {
   }
 };
 
+// Pievienot grozam - this. nestrada - zem komentāra alternativs risinajums 
+const form = useForm({
+  product_id: null,
+  quantity: 1,      
+});
+
 const addToCart = async (product) => {
-  await this.$inertia.post('/cart/add', { product_id: product.id });
-  alert('Product added to cart!');
+  form.product_id = product.id;  
+
+  await form.post('/cart/add', {
+    onSuccess: () => {
+      alert('Product added to cart!');
+    },
+    onError: (errors) => {
+      console.error('Error adding product to cart:', errors);
+    },
+  });
 };
 </script>
 
