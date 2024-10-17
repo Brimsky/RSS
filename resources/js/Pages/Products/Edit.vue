@@ -1,40 +1,76 @@
 <template>
-    <div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div class="px-6 py-8 bg-black text-white">
-            <h1 class="text-3xl font-bold text-center">Edit Product</h1>
+  <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Back button -->
+      <div class="mb-8">
+        <Link href="/products" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Products
+        </Link>
+      </div>
+
+      <h1 class="text-3xl font-bold text-center mb-12">Edit Listing</h1>
+
+      <form @submit.prevent="submitForm" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column: Photos Section -->
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+          <h2 class="text-xl font-semibold mb-4">Photos</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div 
+              v-for="(photo, index) in form.photos" 
+              :key="index" 
+              class="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
+            >
+              <img :src="photo" alt="Product photo" class="w-full h-full object-cover" />
+              <button 
+                @click="removePhoto(index)" 
+                class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors duration-200"
+              >
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div 
+              @click="triggerFileInput"
+              class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors duration-200"
+            >
+              <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </div>
           </div>
-  
-          <div class="p-8">
-            <form @submit.prevent="submitForm" class="space-y-6">
+          <input
+            ref="fileInput"
+            type="file"
+            @change="handlePhotoUpload"
+            accept="image/*"
+            multiple
+            class="hidden"
+          />
+        </div>
+
+        <!-- Right Column: Listing Details -->
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h2 class="text-xl font-semibold mb-4">Listing Details</h2>
+            <div class="space-y-4">
               <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   v-model="form.name"
                   type="text"
                   id="name"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black sm:text-sm transition-shadow duration-200"
-                  placeholder="Enter product name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="e.g., Xbox 360 Console"
                   required
                 />
               </div>
-  
               <div>
-                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea
-                  v-model="form.description"
-                  id="description"
-                  rows="4"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black sm:text-sm transition-shadow duration-200"
-                  placeholder="Enter product description"
-                  required
-                ></textarea>
-              </div>
-  
-              <div>
-                <label for="price" class="block text-sm font-medium text-gray-700">Price (€)</label>
-                <div class="mt-1 relative rounded-md shadow-sm">
+                <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                <div class="relative rounded-md shadow-sm">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span class="text-gray-500 sm:text-sm">€</span>
                   </div>
@@ -43,87 +79,158 @@
                     type="number"
                     step="0.01"
                     id="price"
-                    class="block w-full pl-7 pr-12 border-gray-300 rounded-md focus:ring-black focus:border-black sm:text-sm transition-shadow duration-200"
+                    class="w-full pl-7 pr-12 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="0.00"
                     required
                   />
                 </div>
               </div>
-  
               <div>
-                <button
-                  type="submit"
-                  class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
-                  :disabled="form.processing"
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  v-model="form.category"
+                  id="category"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <svg v-if="form.processing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {{ form.processing ? 'Updating...' : 'Update Product' }}
-                </button>
+                  <option value="">Select a category</option>
+                  <option value="electronics">Electronics</option>
+                  <!-- Add more categories as needed -->
+                </select>
               </div>
-            </form>
-  
-            <!-- Success notification -->
-            <div v-if="productUpdated" class="mt-8 bg-green-50 border-l-4 border-green-400 p-4 rounded-md">
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-green-800">Product updated successfully!</p>
-                </div>
+              <div>
+                <label for="subCategory" class="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
+                <select
+                  v-model="form.subCategory"
+                  id="subCategory"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">Select a sub category</option>
+                  <option value="console">Console</option>
+                  <!-- Add more sub categories as needed -->
+                </select>
+              </div>
+              <div>
+                <label for="condition" class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                <select
+                  v-model="form.condition"
+                  id="condition"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">Select condition</option>
+                  <option value="new">New</option>
+                  <option value="used">Used</option>
+                  <!-- Add more conditions as needed -->
+                </select>
+              </div>
+              <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  v-model="form.location"
+                  type="text"
+                  id="location"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="e.g., Riga"
+                  required
+                />
               </div>
             </div>
-  
-            <!-- Back to Products button -->
-            <div class="mt-8 text-center">
-              <Link
-                href="/products"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200"
-              >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Products
-              </Link>
-            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h2 class="text-xl font-semibold mb-4">Description</h2>
+            <textarea
+              v-model="form.description"
+              id="description"
+              rows="6"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Describe your item in detail..."
+              required
+            ></textarea>
+          </div>
+
+          <!-- Submit button -->
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="px-8 py-3 border border-transparent text-lg font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              :disabled="form.processing"
+            >
+              {{ form.processing ? 'Updating...' : 'Update Listing' }}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Success Notification -->
+      <div v-if="productUpdated" class="mt-8 bg-green-50 border-l-4 border-green-400 p-4 rounded-md">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-green-800">Listing updated successfully!</p>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue';
-  import { useForm, Link } from '@inertiajs/vue3';
-  
-  const props = defineProps({
-    product: Object
-  });
-  
-  const form = useForm({
-    name: props.product.name,
-    description: props.product.description,
-    price: props.product.price,
-  });
-  
-  const productUpdated = ref(false);
-  
-  const submitForm = async () => {
-    await form.put(`/products/${props.product.id}`, {
-      onSuccess: () => {
-        productUpdated.value = true;
-        setTimeout(() => {
-          productUpdated.value = false;
-        }, 5000); // Hide the success message after 5 seconds
-      },
-      onError: () => {
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useForm, Link } from '@inertiajs/vue3';
+
+const props = defineProps({
+  product: Object
+});
+
+const form = useForm({
+  name: props.product.name,
+  description: props.product.description,
+  price: props.product.price,
+  category: props.product.category,
+  subCategory: props.product.subCategory,
+  location: props.product.location,
+  condition: props.product.condition,
+  photos: props.product.photos || []
+});
+
+const productUpdated = ref(false);
+const fileInput = ref(null);
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const handlePhotoUpload = (event) => {
+  const files = event.target.files;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      form.photos.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const removePhoto = (index) => {
+  form.photos.splice(index, 1);
+};
+
+const submitForm = async () => {
+  await form.put(`/products/${props.product.id}`, {
+    onSuccess: () => {
+      productUpdated.value = true;
+      setTimeout(() => {
         productUpdated.value = false;
-      }
-    });
-  };
-  </script>
+      }, 5000); // Hide the success message after 5 seconds
+    },
+    onError: () => {
+      productUpdated.value = false;
+    }
+  });
+};
+</script>
