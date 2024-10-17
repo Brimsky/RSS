@@ -17,9 +17,18 @@
         <div class="flex-1">
           <p class="text-xl font-semibold">Price: ${{ parseFloat(product.price).toFixed(2) }}</p>
           <p class="mt-4">{{ product.description }}</p>
-          <button @click="addToCart(product)" class="btn btn-primary mt-6" :disabled="form.processing">
-            {{ form.processing ? 'Adding...' : 'Add to Cart' }}
-          </button>
+          <div class="mt-6 flex items-center space-x-4">
+            <!-- Add to Cart Button -->
+            <button @click="addToCart(product)" class="btn btn-primary" :disabled="form.processing">
+              {{ form.processing ? 'Adding...' : 'Add to Cart' }}
+            </button>
+            <!-- Listing Saves Button -->
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-lg hover:bg-gray-300 transition duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -72,16 +81,8 @@ h1 {
   align-items: center;
 }
 
-.flex {
-  display: flex;
-}
-
 .bg-red-100 {
   background-color: #fcebd3;
-}
-
-.border {
-  border: 1px solid #e2e8f0;
 }
 
 .text-red-700 {
@@ -108,27 +109,12 @@ h1 {
   display: inline-block;
 }
 
-.text-xl {
-  font-size: 1.25rem;
+.flex {
+  display: flex;
+  align-items: center;
 }
 
-.font-semibold {
-  font-weight: 600;
-}
-
-.mt-4 {
-  margin-top: 1rem;
-}
-
-.mt-6 {
-  margin-top: 1.5rem;
-}
-
-.w-1-3 {
-  width: 33.333%;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
+.space-x-4 {
+  gap: 1rem;
 }
 </style>

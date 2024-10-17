@@ -49,9 +49,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
     Route::post('/products/{id}/register-click', [ProductController::class, 'registerClick'])->name('products.registerClick');
-
-
-
 });
 
 // Cart routes - accessible only for authenticated users
