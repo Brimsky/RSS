@@ -318,24 +318,78 @@ export default {
     },
     
     // Adding markers to the map via Leaflet
-    addPickupMarkers() {
-    this.clearMarkers();
-    this.pickupPoints.forEach((point) => {
-    const marker = L.marker([point.lat, point.lng]).addTo(this.map);
-    
-    // Add an event listener for the marker to display a message when clicked
-    marker.on('click', () => {
-      alert(`You have selected: ${point.name}`);
-    });
+            addPickupMarkers() {
+        this.clearMarkers();
+        
+                // Define custom icons for normal, hover, and selected states
+                const defaultIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+            shadowSize: [41, 41],
+            shadowAnchor: [12, 41]
+        });
 
-    // Bind a popup to the marker that shows the pickup point name
-    marker.bindPopup(`<h3>${point.name}</h3>`);
-    
-    // Store the marker
-    this.markers.push(marker);
-    });
-    },
-    
+        const hoverIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',  // Используем увеличенную версию стандартной иконки
+            iconSize: [35, 51],
+            iconAnchor: [17, 51],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+            shadowSize: [51, 51],
+            shadowAnchor: [17, 51]
+        });
+
+        const selectedIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-red.png',  // Используем красную версию иконки
+            iconSize: [30, 46],
+            iconAnchor: [15, 46],
+            popupAnchor: [1, -34],
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+            shadowSize: [46, 46],
+            shadowAnchor: [15, 46]
+        });
+
+
+        this.pickupPoints.forEach((point) => {
+            // Create a marker with the default icon
+            const marker = L.marker([point.lat, point.lng], { icon: defaultIcon }).addTo(this.map);
+
+            // Event listeners for marker hover (mouseover and mouseout)
+            marker.on('mouseover', () => {
+            marker.setIcon(hoverIcon);  // Change to hover icon
+            });
+
+            marker.on('mouseout', () => {
+            marker.setIcon(defaultIcon);  // Revert to default icon
+            });
+
+            // Event listener for marker click (open menu or modal)
+            marker.on('click', () => {
+            marker.setIcon(selectedIcon);  // Change to selected icon
+
+            // Show custom menu/modal here
+            this.showMarkerMenu(point);
+            });
+
+            // Bind a popup to the marker that shows the pickup point name
+            marker.bindPopup(`<h3>${point.name}</h3>`);
+
+            // Store the marker
+            this.markers.push(marker);
+        });
+        },
+
+        // Method to handle displaying a menu or modal after selecting a marker
+        showMarkerMenu(point) {
+        // This could open a modal or show a sidebar with more options
+        this.modalTitle = `Selected: ${point.name}`;
+        this.modalContent = `More options for ${point.name}.`;
+        this.isModalOpen = true;
+        },
+
     // Clear all markers from the map
     clearMarkers() {
       this.markers.forEach(marker => this.map.removeLayer(marker));
@@ -399,10 +453,55 @@ export default {
   #map {
   width: 100%;
   height: 300px;
+  transition: all 0.3s ease-in-out;  /* Плавное скрытие карты */
+  position: relative;
+  z-index: 1;  /* Карта будет на заднем плане */
 }
 
   /* Additional styling for modal */
     .fixed {
     z-index: 50;
     }
+
+    .leaflet-marker-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.custom-popup {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  max-width: 250px;
+}
+
+.custom-popup h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.custom-popup p {
+  font-size: 13px;
+  color: #666;
+  margin: 10px 0;
+}
+
+.custom-popup button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.custom-popup button:hover {
+  background-color: #0056b3;
+}
+
+
   </style>
