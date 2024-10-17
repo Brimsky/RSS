@@ -10,22 +10,29 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of the products.
+     * Display a listing of the products with optional search.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch all products (no filtering by user_id)
-        $products = Product::all();
+        // Получаем поисковый запрос (если он есть)
+        $search = $request->input('search');
         
+        // Поиск продуктов по имени или описанию
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%$search%")
+                             ->orWhere('description', 'like', "%$search%");
+            })
+            ->get();
+
         return Inertia::render('Products/Index', [
             'products' => $products,
+            'search' => $search, // Вернем поисковый запрос в представление
         ]);
-        
     }
 
     public function dashboard()
     {
-
         $userId = auth()->id();
         $products = Product::where('user_id', $userId)->get();
 
@@ -35,7 +42,6 @@ class ProductController extends Controller
         ]);
     }
     
-
     public function create()
     {
         return Inertia::render('Products/Create');
