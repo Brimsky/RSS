@@ -9,11 +9,16 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'price', 'user_id'];
+    protected $fillable = ['name', 'description', 'price', 'user_id', 'clicks'];
 
     // Relationship to User
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function incrementClicks()
+    {
+        $this->increment('clicks');
     }
 }

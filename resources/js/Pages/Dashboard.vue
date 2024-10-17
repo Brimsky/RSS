@@ -40,14 +40,15 @@
                         </div>
 
                         <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 relative">
-                            <div class="space-y-6 mb-16"> <!-- Added mb-16 for space at the bottom -->
+                            <div class="space-y-6 mb-16">
                                 <div v-for="(product, index) in limitedProducts" :key="product.id" class="flex items-center space-x-4 border-b pb-4 last:border-b-0 last:pb-0">
-                                    <!-- Image placeholder (if products have images) -->
                                     <img src="https://via.placeholder.com/100" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
-                                    
-                                    <!-- Product details -->
                                     <div class="flex-grow">
-                                        <h3 class="text-xl font-semibold">{{ product.name }}</h3>
+                                        <h3 class="text-xl font-semibold">
+                                            <a @click="registerClick(product.id)" :href="`/products/${product.id}`" class="text-blue-600 hover:underline">
+                                                {{ product.name }}
+                                            </a>
+                                        </h3>
                                         <p class="text-2xl font-bold text-gray-700">${{ parseFloat(product.price).toFixed(2) }}</p>
                                         <p class="text-gray-500">{{ product.description }}</p>
                                     </div>
@@ -59,7 +60,6 @@
                             </a>
                         </div>
                     </div>
-                
 
                     <!-- Marketplace Insights -->
                     <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6">
@@ -73,7 +73,7 @@
                                     </svg>
                                     <span class="text-xl">Clicks on listings</span>
                                 </div>
-                                <span class="text-4xl font-bold">0</span>
+                                <span class="text-4xl font-bold">{{ totalClicks }}</span> <!-- Adding the total number of clicks -->
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
                                 <div class="flex items-center space-x-4">
@@ -95,15 +95,26 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, computed  } from 'vue';
+import { ref, computed } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
-  products: Array
+  products: Array,
+  totalClicks: Number, // Adding totalClicks for passing the number of clicks
 });
 
-const limit = ref(3); // Number of products to display
+const limit = ref(3); // Limit the number of displayed products
 
 const limitedProducts = computed(() => {
   return props.products.slice(0, limit.value);
 });
+
+// Function to register clicks
+const registerClick = async (productId) => {
+  try {
+    await axios.post(`/products/${productId}/register-click`);
+  } catch (error) {
+    console.error('Error registering click:', error);
+  }
+};
 </script>

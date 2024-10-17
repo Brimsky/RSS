@@ -14,10 +14,8 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // Получаем поисковый запрос (если он есть)
         $search = $request->input('search');
         
-        // Поиск продуктов по имени или описанию
         $products = Product::query()
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'like', "%$search%")
@@ -27,7 +25,7 @@ class ProductController extends Controller
 
         return Inertia::render('Products/Index', [
             'products' => $products,
-            'search' => $search, // Вернем поисковый запрос в представление
+            'search' => $search, 
         ]);
     }
 
@@ -36,11 +34,14 @@ class ProductController extends Controller
         $userId = auth()->id();
         $products = Product::where('user_id', $userId)->get();
 
-        // Pass the filtered products to the Inertia view
+        $totalClicks = Product::where('user_id', $userId)->sum('clicks');
+
         return Inertia::render('Dashboard', [
             'products' => $products,
+            'totalClicks' => $totalClicks,
         ]);
     }
+
     
     public function create()
     {
@@ -133,4 +134,15 @@ class ProductController extends Controller
         ]);
     }
 
+    public function registerClick(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+    
+        // Проверяем, что текущий пользователь не является создателем продукта
+        if ($product->user_id !== auth()->id()) {
+            $product->increment('clicks'); // Увеличиваем количество кликов
+        }
+    
+        return response()->json(['message' => 'Click registered successfully']);
+    }
 }

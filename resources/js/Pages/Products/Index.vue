@@ -19,9 +19,9 @@
                     </thead>
                     <tbody>
                         <tr v-for="product in products" :key="product.id">
-                            <!-- Link to the product details page -->
+                            <!-- Handle click on product name and redirect -->
                             <td class="font-semibold">
-                                <a :href="`/products/${product.id}`" class="text-blue-600 hover:underline">
+                                <a @click.prevent="registerClick(product.id, `/products/${product.id}`)" href="#" class="text-blue-600 hover:underline">
                                     {{ product.name }}
                                 </a>
                             </td>
@@ -40,35 +40,41 @@
     </AuthenticatedLayout>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-// Handle dropdown and other UI elements
-const showingNavigationDropdown = ref(false);
+const props = defineProps({
+  products: Array,
+});
 
+// Function to send a request when a product is clicked and redirect
+const registerClick = async (productId, productUrl) => {
+  try {
+    // Register the click
+    await axios.post(`/products/${productId}/register-click`);
+    // After successful click registration, redirect to the product page
+    window.location.href = productUrl;
+  } catch (error) {
+    console.error('Error registering click:', error);
+  }
+};
+
+// Other methods for deleting a product and adding it to the cart
+const deleteProduct = async (id) => {
+  if (confirm('Are you sure you want to delete this product?')) {
+    await this.$inertia.delete(`/products/${id}`);
+  }
+};
+
+const addToCart = async (product) => {
+  await this.$inertia.post('/cart/add', { product_id: product.id });
+  alert('Product added to cart!');
+};
 </script>
 
-<script>
-export default {
-    props: {
-        products: Array,
-    },
-    methods: {
-        // Delete product from the list
-        async deleteProduct(id) {
-            if (confirm("Are you sure you want to delete this product?")) {
-                await this.$inertia.delete(`/products/${id}`);
-            }
-        },
-        // Add product to the cart
-        async addToCart(product) {
-            await this.$inertia.post('/cart/add', { product_id: product.id });
-            alert('Product added to cart!');
-        }
-    }
-}
-</script>
 
 <style scoped>
 /* Container styling */
