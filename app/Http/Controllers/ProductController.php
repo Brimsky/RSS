@@ -138,9 +138,8 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
     
-        // Проверяем, что текущий пользователь не является создателем продукта
         if ($product->user_id !== auth()->id()) {
-            $product->increment('clicks'); // Увеличиваем количество кликов
+            $product->increment('clicks');
         }
     
         return response()->json(['message' => 'Click registered successfully']);
