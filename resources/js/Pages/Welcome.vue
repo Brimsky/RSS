@@ -124,22 +124,22 @@
                   enter-from-class="opacity-0"
                   leave-to-class="opacity-0"
                 >
-                  <div
-                    v-if="currentSlide === index"
-                    class="absolute inset-0 flex items-center justify-between p-8"
-                    :style="{ backgroundColor: slide.bgColor }"
-                  >
-                    <div class="text-white">
-                      <h2 class="text-3xl font-bold mb-2">{{ slide.title }}</h2>
-                      <p class="mb-4">{{ slide.description }}</p>
-                      <button class="bg-white text-gray-800 px-8 py-2 rounded-full hover:bg-gray-100 transition-all duration-300">
-                        {{ slide.buttonText }}
-                      </button>
-                    </div>
-                    <div class="w-1/2 h-full flex items-center justify-center">
-                      <img :src="slide.image" :alt="slide.title" class="max-h-full object-contain scale-150" />
-                    </div>
+                <div
+                  v-if="currentSlide === index"
+                  class="absolute inset-0 flex items-center justify-between p-8"
+                  :style="{ backgroundColor: slide.bgColor }"
+                >
+                  <div class="text-white" style="padding-left: 50px;"> <!-- added padding-left -->
+                    <h2 class="text-3xl font-bold mb-2">{{ slide.title }}</h2>
+                    <p class="mb-4">{{ slide.description }}</p>
+                    <button class="bg-white text-gray-800 px-8 py-2 rounded-full hover:bg-gray-100 transition-all duration-300">
+                      {{ slide.buttonText }}
+                    </button>
                   </div>
+                  <div class="w-1/2 h-full flex items-center justify-center">
+                    <img :src="slide.image" :alt="slide.title" class="max-h-full object-contain scale-150" />
+                  </div>
+                </div>
                 </transition>
               </template>
 
@@ -157,15 +157,20 @@
               <!-- Arrow buttons -->
               <button
                 @click="prevSlide"
-                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/30 p-2 rounded-full hover:bg-white/50 transition-all duration-300"
+                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/20 p-3 rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300 flex items-center justify-center"
               >
-                ◀
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
+
               <button
                 @click="nextSlide"
-                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/30 p-2 rounded-full hover:bg-white/50 transition-all duration-300"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/20 p-3 rounded-full hover:bg-black/50 hover:scale-110 transition-all duration-300 flex items-center justify-center"
               >
-                ▶
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-white">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
@@ -359,3 +364,14 @@ onBeforeUnmount(() => {
   clearInterval(slideInterval);
 });
 </script>
+
+<style scoped>
+.bg-gradient-to-r {
+  background: linear-gradient(to right, #4b5563, #1f2937);
+}
+
+.bg-gradient-to-l {
+  background: linear-gradient(to left, #4b5563, #1f2937);
+}
+
+</style>

@@ -31,6 +31,7 @@
                                 <a :href="`/products/${product.id}/edit`" class="btn btn-warning mr-2">Edit</a>
                                 <button @click="deleteProduct(product.id)" class="btn btn-danger mr-2">Delete</button>
                                 <button @click="addToCart(product)" class="btn btn-primary">Add to Cart</button>
+                                <Toast v-if="toastMessage" :message="toastMessage" />
                             </td>
                         </tr>
                     </tbody>
@@ -44,12 +45,16 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import Toast from '@/Components/Toast.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
   products: Array,
+  product_id: null,
 });
+
+const toastMessage = ref(null);
 
 // Function to send a request when a product is clicked and redirect
 const registerClick = async (productId, productUrl) => {
@@ -77,11 +82,15 @@ const form = useForm({
 });
 
 const addToCart = async (product) => {
-  form.product_id = product.id;  
+  form.product_id = product.id;
 
   await form.post('/cart/add', {
     onSuccess: () => {
-      alert('Product added to cart!');
+      toastMessage.value = 'Product added to cart!';
+
+      setTimeout(() => {
+        toastMessage.value = null;
+      }, 3000);
     },
     onError: (errors) => {
       console.error('Error adding product to cart:', errors);
