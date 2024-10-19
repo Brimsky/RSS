@@ -32,6 +32,7 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 
 // Public delivery page route
 Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery.index');
+Route::post('/delivery/store', [DeliveryController::class, 'store'])->name('delivery.store');
 
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
