@@ -5,7 +5,7 @@
             <div class="container">
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold">Product List</h1>
-                    <a href="/products/create" class="btn btn-primary">Add New Product</a>
+                    <a :href="route('products.create')" class="btn btn-primary">Add New Product</a>
                 </div>
 
                 <table class="table mt-4">
@@ -48,6 +48,7 @@ import axios from 'axios';
 import Toast from '@/Components/Toast.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({
   products: Array,

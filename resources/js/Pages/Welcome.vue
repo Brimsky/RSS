@@ -97,20 +97,19 @@
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <!-- Categories -->
-        <div class="col-span-1">
-          <div class="bg-white shadow rounded-lg p-4">
-            <h2 class="text-lg font-semibold mb-4 text-gray-800">Categories</h2>
-            <ul class="space-y-2">
-              <li
-                v-for="category in categories"
-                :key="category"
-                class="p-2 hover:bg-gray-100 rounded cursor-pointer transition-all duration-300"
-              >
-                {{ category }}
-              </li>
-            </ul>
-          </div>
+        <div class="container mx-auto p-6">
+      <h2 class="text-2xl font-bold mb-4">Categories</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div v-for="category in categories" :key="category" 
+             class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow duration-300">
+          <Link :href="route('products.subcategories', category)" 
+                class="text-xl font-semibold text-blue-500 hover:text-blue-600">
+            {{ category }}
+          </Link>
         </div>
+      </div>
+    </div>
+
 
         <!-- Main content area -->
         <div class="col-span-1 md:col-span-3 space-y-6">
@@ -247,6 +246,7 @@ import newArrivalsImage from '../icons/box.png';
 // Добавляем модель для поиска
 
 const search = ref('');
+const categories = ref([]);
 const user = ref(null);
 
 // Метод для отправки поискового запроса
@@ -266,16 +266,16 @@ const isOpen = ref(false);
 const currentSlide = ref(0);
 const newsletterEmail = ref('');
 
-const categories = [
-  "Electronics",
-  "Fashion",
-  "Home & Garden",
-  "Health & Beauty",
-  "Sports & Outdoors",
-  "Real Estate",
-  "Art & Collectibles",
-  "Office Supplies",
-];
+// const categories = [
+//   "Electronics",
+//   "Fashion",
+//   "Home & Garden",
+//   "Health & Beauty",
+//   "Sports & Outdoors",
+//   "Real Estate",
+//   "Art & Collectibles",
+//   "Office Supplies",
+// ];
 
 const slides = [
   {
@@ -359,6 +359,19 @@ onMounted(async () => {
 
   slideInterval = setInterval(nextSlide, 5000);
 });
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/categories');
+    categories.value = response.data;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+  }
+});
+
+const selectCategory = (category) => {
+  router.visit(`/products?category=${category}`);
+};
 
 onBeforeUnmount(() => {
   clearInterval(slideInterval);

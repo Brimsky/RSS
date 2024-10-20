@@ -11,15 +11,23 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->unsignedInteger('clicks')->default(0); // Добавляем поле кликов с значением по умолчанию 0
-        });
+        if (Schema::hasTable('products')) {
+            Schema::table('products', function (Blueprint $table) {
+                if (!Schema::hasColumn('products', 'clicks')) {
+                    $table->unsignedInteger('clicks')->default(0);
+                }
+            });
+        }
     }
     
     public function down()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('clicks');
-        });
+        if (Schema::hasTable('products')) {
+            Schema::table('products', function (Blueprint $table) {
+                if (Schema::hasColumn('products', 'clicks')) {
+                    $table->dropColumn('clicks');
+                }
+            });
+        }
     }    
 };
