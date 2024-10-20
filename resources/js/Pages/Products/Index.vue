@@ -47,14 +47,17 @@ import { ref } from 'vue';
 import axios from 'axios';
 import Toast from '@/Components/Toast.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { useForm } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
+import { useForm, Link} from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
   products: Array,
   product_id: null,
+
 });
 
+const { $inertia } = usePage().props;
 const toastMessage = ref(null);
 
 // Function to send a request when a product is clicked and redirect
@@ -72,7 +75,7 @@ const registerClick = async (productId, productUrl) => {
 // Other methods for deleting a product and adding it to the cart
 const deleteProduct = async (id) => {
   if (confirm('Are you sure you want to delete this product?')) {
-    await this.$inertia.delete(`/products/${id}`);
+    await router.delete(`/products/${id}`);
   }
 };
 
