@@ -14,9 +14,10 @@
 
         <!-- Кнопка открытия формы заполнения данных для доставки -->
         <div>
-          <button @click="openForm" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+          <button @click="openForm" class="mt-8 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:from-blue-600 hover:to-blue-800 hover:shadow-xl">
             Fill Delivery Information
           </button>
+
         </div>
 
         <!-- Вставляем компонент DeliveryForm вместо ручной формы -->
