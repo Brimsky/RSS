@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 
 const props = defineProps({
     mustVerifyEmail: {
@@ -18,13 +19,20 @@ const props = defineProps({
     },
 });
 
-// Добавьте этот метод для получения URL аватара
+// Метод для получения URL аватара
 const getAvatarUrl = () => {
     if (props.user.media && props.user.media.length > 0) {
+        console.log('Media found:', props.user.media[0]);
         return props.user.media[0].original_url;
     }
+    console.log('No media found');
     return null;
 };
+
+onMounted(() => {
+    console.log('User data:', props.user);
+    console.log('Avatar URL:', getAvatarUrl());
+});
 </script>
 
 <template>

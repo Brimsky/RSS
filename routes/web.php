@@ -23,9 +23,9 @@ Route::get('/', function () {
 
 // Public routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-// Route::get('/products/{category}', [ProductController::class, 'subcategories'])->name('products.subcategories');
-// Route::get('/products/{category}/{subcategory}', [ProductController::class, 'listings'])->name('products.listings');
-// Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{category}', [ProductController::class, 'subcategories'])->name('products.subcategories');
+Route::get('/products/{category}/{subcategory}', [ProductController::class, 'listings'])->name('products.listings');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 
 Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery.index');
