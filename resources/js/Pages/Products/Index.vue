@@ -5,7 +5,7 @@
             <div class="container">
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold">Product List</h1>
-                    <a :href="route('products.create')" class="btn btn-primary">Add New Product</a>
+                    <a v-if="$page.props.auth.user.role === 'seller'" :href="route('products.create')" class="btn btn-primary">Add New Product</a>
                 </div>
 
                 <table class="table mt-4">
@@ -28,8 +28,10 @@
                             <td>${{ parseFloat(product.price).toFixed(2) }}</td>
                             <td>{{ product.description }}</td>
                             <td class="text-right">
-                                <a :href="`/products/${product.id}/edit`" class="btn btn-warning mr-2">Edit</a>
-                                <button @click="deleteProduct(product.id)" class="btn btn-danger mr-2">Delete</button>
+                                <template v-if="$page.props.auth.user.role === 'seller'">
+                                    <a :href="`/products/${product.id}/edit`" class="btn btn-warning mr-2">Edit</a>
+                                    <button @click="deleteProduct(product.id)" class="btn btn-danger mr-2">Delete</button>
+                                </template>
                                 <button @click="addToCart(product)" class="btn btn-primary">Add to Cart</button>
                                 <Toast v-if="toastMessage" :message="toastMessage" />
                             </td>
@@ -40,7 +42,6 @@
         </div>
     </AuthenticatedLayout>
 </template>
-
 
 <script setup>
 import { ref } from 'vue';
