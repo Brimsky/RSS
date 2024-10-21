@@ -32,8 +32,18 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
-            ],
+            'user' => $request->user() ? [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+                'media' => $request->user()->media->map(function ($media) {
+                    return [
+                        'id' => $media->id,
+                        'file_name' => $media->file_name,
+                    ];
+                }),
+            ] : null,
+        ],
         ];
     }
 }

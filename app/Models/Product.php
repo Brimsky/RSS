@@ -23,6 +23,7 @@ class Product extends Model
 
     protected $casts = [
         'photos' => 'array',
+        // 'photos' => 'json',
     ];
     public function user()
     {

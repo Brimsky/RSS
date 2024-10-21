@@ -1,11 +1,10 @@
 <template>
     <AuthenticatedLayout>
         <div class="min-h-screen bg-gray-100">
-            <!-- Product List Content -->
             <div class="container">
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold">Product List</h1>
-                    <a :href="route('products.create')" class="btn btn-primary">Add New Product</a>
+                    <Link :href="route('products.create')" class="btn btn-primary">Add New Product</Link>
                 </div>
 
                 <table class="table mt-4">
@@ -19,87 +18,73 @@
                     </thead>
                     <tbody>
                         <tr v-for="product in products" :key="product.id">
-                            <!-- Handle click on product name and redirect -->
                             <td class="font-semibold">
-                                <a @click.prevent="registerClick(product.id, `/products/${product.id}`)" href="#" class="text-blue-600 hover:underline">
+                                <Link :href="route('products.show', product.id)" class="text-blue-600 hover:underline" @click="registerClick(product.id)">
                                     {{ product.name }}
-                                </a>
+                                </Link>
                             </td>
                             <td>${{ parseFloat(product.price).toFixed(2) }}</td>
                             <td>{{ product.description }}</td>
                             <td class="text-right">
-                                <a :href="`/products/${product.id}/edit`" class="btn btn-warning mr-2">Edit</a>
+                                <Link :href="route('products.edit', product.id)" class="btn btn-warning mr-2">Edit</Link>
                                 <button @click="deleteProduct(product.id)" class="btn btn-danger mr-2">Delete</button>
                                 <button @click="addToCart(product)" class="btn btn-primary">Add to Cart</button>
-                                <Toast v-if="toastMessage" :message="toastMessage" />
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+        <Toast v-if="toastMessage" :message="toastMessage" />
     </AuthenticatedLayout>
 </template>
 
-
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
-import Toast from '@/Components/Toast.vue';
+import { Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { useForm, Link} from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
+import axios from 'axios';
 
 const props = defineProps({
-  products: Array,
-  product_id: null,
-
+    products: Array,
 });
 
-const { $inertia } = usePage().props;
 const toastMessage = ref(null);
 
-// Function to send a request when a product is clicked and redirect
-const registerClick = async (productId, productUrl) => {
-  try {
-    // Register the click
-    await axios.post(`/products/${productId}/register-click`);
-    // After successful click registration, redirect to the product page
-    window.location.href = productUrl;
-  } catch (error) {
-    console.error('Error registering click:', error);
-  }
+const registerClick = async (productId) => {
+    try {
+        await axios.post(`/products/${productId}/register-click`);
+    } catch (error) {
+        console.error('Error registering click:', error);
+    }
 };
 
-// Other methods for deleting a product and adding it to the cart
-const deleteProduct = async (id) => {
-  if (confirm('Are you sure you want to delete this product?')) {
-    await router.delete(`/products/${id}`);
-  }
+const deleteProduct = (id) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+        router.delete(route('products.destroy', id), {
+            preserveState: false,
+        });
+    }
 };
 
-// Pievienot grozam - this. nestrada - zem komentāra alternativs risinajums 
-const form = useForm({
-  product_id: null,
-  quantity: 1,      
-});
-
-const addToCart = async (product) => {
-  form.product_id = product.id;
-
-  await form.post('/cart/add', {
-    onSuccess: () => {
-      toastMessage.value = 'Product added to cart!';
-
-      setTimeout(() => {
-        toastMessage.value = null;
-      }, 3000);
-    },
-    onError: (errors) => {
-      console.error('Error adding product to cart:', errors);
-    },
-  });
+const addToCart = (product) => {
+    router.post(route('cart.add'), {
+        product_id: product.id,
+        quantity: 1,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            toastMessage.value = 'Product added to cart!';
+            setTimeout(() => {
+                toastMessage.value = null;
+            }, 3000);
+        },
+        onError: (errors) => {
+            console.error('Error adding product to cart:', errors);
+        },
+    });
 };
 </script>
 

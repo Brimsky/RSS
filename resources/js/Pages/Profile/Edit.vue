@@ -4,26 +4,23 @@ import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
-    mustVerifyEmail: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
+    mustVerifyEmail: Boolean,
+    status: String,
     user: {
         type: Object,
         required: true,
     },
 });
-
+const avatarUrl = ref(null);
 // Метод для получения URL аватара
 const getAvatarUrl = () => {
     if (props.user.media && props.user.media.length > 0) {
         console.log('Media found:', props.user.media[0]);
-        return props.user.media[0].original_url;
+        // Use the correct path to access the image
+        return '/storage/' + props.user.media[0].id + '/' + props.user.media[0].file_name;
     }
     console.log('No media found');
     return null;
@@ -31,7 +28,8 @@ const getAvatarUrl = () => {
 
 onMounted(() => {
     console.log('User data:', props.user);
-    console.log('Avatar URL:', getAvatarUrl());
+    avatarUrl.value = getAvatarUrl();
+    console.log('Avatar URL:', avatarUrl.value);
 });
 </script>
 
@@ -47,7 +45,7 @@ onMounted(() => {
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <div class="flex items-center space-x-4">
                         <div v-if="getAvatarUrl()" class="flex-shrink-0">
-                            <img :src="getAvatarUrl()" alt="User Avatar" class="h-24 w-24 rounded-full object-cover" />
+                            <img v-if="avatarUrl" :src="avatarUrl" alt="User Avatar" class="h-24 w-24 rounded-full object-cover" />
                         </div>
                         <div v-else class="flex-shrink-0">
                             <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">

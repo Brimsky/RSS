@@ -65,9 +65,11 @@ class User extends Authenticatable implements HasMedia
              ->toMediaCollection('avatar', 'public');
     }
 
-    public function getAvatarUrl(): string
-    {
-        $media = $this->getFirstMedia('avatar');
-        return $media ? $media->getFullUrl() : '';
+    public function getAvatarAttribute()
+{
+    if ($this->attributes['avatar']) {
+        return asset('storage/' . $this->attributes['avatar']);
     }
+    return null;
+}
 }

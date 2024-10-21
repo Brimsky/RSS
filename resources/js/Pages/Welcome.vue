@@ -48,32 +48,39 @@
 
           <!-- User Info / Account Dropdown -->
           <div class="relative">
-            <button
-              @click="isOpen = !isOpen"
-              class="flex items-center space-x-2 text-gray-500 hover:text-gray-900 focus:outline-none"
-            >
-              <template v-if="$page.props.auth.user">
-                <img :src="$page.props.auth.user.avatar" :alt="$page.props.auth.user.name" class="h-8 w-8 rounded-full">
-                <span class="text-sm font-medium">{{ $page.props.auth.user.name }}</span>
-              </template>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </button>
+    <button
+      @click="isOpen = !isOpen"
+      class="flex items-center space-x-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+    >
+      <template v-if="user">
+        <div>
+          <img v-if="avatarUrl" :src="avatarUrl" :alt="user.name" class="h-8 w-8 rounded-full object-cover">
+          <div v-else class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+        <span class="text-sm font-medium">{{ user.name }}</span>
+        <!-- Debugging info -->
+        <span class="text-xs text-gray-500">(Avatar: {{ avatarUrl ? 'Yes' : 'No' }})</span>
+      </template>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    </button>
 
             <div
               v-if="isOpen"
               class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
             >
               <div class="py-1">
-                <template v-if="$page.props.auth.user">
+                <template v-if="user">
                   <Link :href="route('dashboard')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Dashboard
                   </Link>
-                  <Link href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link :href="route('profile.edit')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Profile
                   </Link>
-                  <Link :href="route('logout')" method="post" as="button" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link :href="route('logout')" method="post" as="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Logout
                   </Link>
                 </template>
@@ -236,35 +243,52 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import axios from 'axios';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
-
-//photos for slides
 import deliveryImage from '../icons/delivery.png';  
 import summerSaleImage from '../icons/summer.png';
 import newArrivalsImage from '../icons/box.png';
-// Добавляем модель для поиска
 
+const isOpen = ref(false);
 const search = ref('');
 const categories = ref([]);
-const user = ref(null);
+const currentSlide = ref(0);
+const newsletterEmail = ref('');
+const page = usePage();
+const user = ref(page.props.auth.user);
+const avatarUrl = ref(null);
 
+const featuredProducts = ref([]);
+const topSellers = ref([]);
+const recentReviews = ref([]);
+
+const props = defineProps({
+  canLogin: Boolean,
+  canRegister: Boolean,
+});
+
+const getAvatarUrl = () => {
+  if (user.value && user.value.media && user.value.media.length > 0) {
+    console.log('Media found:', user.value.media[0]);
+    return '/storage/' + user.value.media[0].id + '/' + user.value.media[0].file_name;
+  }
+  console.log('No media found for user');
+  return null;
+};
+
+onMounted(() => {
+  console.log('User data:', user.value);
+  avatarUrl.value = getAvatarUrl();
+  console.log('Avatar URL:', avatarUrl.value);
+
+  // ... rest of your onMounted logic ...
+});
 // Метод для отправки поискового запроса
 const searchProducts = () => {
   if (search.value) {
     window.location.href = `/products?search=${search.value}`;
   }
 };
-defineProps({
-  canLogin: Boolean,
-  canRegister: Boolean,
-});
-
-
-
-const isOpen = ref(false);
-const currentSlide = ref(0);
-const newsletterEmail = ref('');
 
 // const categories = [
 //   "Electronics",
@@ -300,10 +324,6 @@ const slides = [
     image: newArrivalsImage,
   },
 ];
-
-const featuredProducts = ref([]);
-const topSellers = ref([]);
-const recentReviews = ref([]);
 
 const nextSlide = () => {
   currentSlide.value = (currentSlide.value + 1) % slides.length;

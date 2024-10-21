@@ -2,6 +2,7 @@
   <AuthenticatedLayout>
     <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-7xl mx-auto">
+        
         <!-- Back button -->
         <div class="mb-8">
           <Link :href="route('products.index')" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200">
@@ -186,64 +187,95 @@
         </div>
       </div>
     </div>
+    <div v-if="form.errors.update_error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <strong class="font-bold">Error!</strong>
+    <span class="block sm:inline">{{ form.errors.update_error }}</span>
+  </div>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
-  product: Object
+  product: Object,
 });
 
-const form = useForm({
-  name: props.product.name,
-  description: props.product.description,
-  price: props.product.price,
-  category: props.product.category,
-  subcategory: props.product.subcategory,
-  location: props.product.location,
-  condition: props.product.condition,
-  photos: props.product.photos || []
-});
-
+const productLoaded = ref(false);
 const productUpdated = ref(false);
 const fileInput = ref(null);
 
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
+const form = useForm({
+  name: '',
+  description: '',
+  price: '',
+  category: '',
+  subcategory: '',
+  location: '',
+  condition: '',
+  photos: undefined, // Use undefined as the default value
+});
 
-const handlePhotoUpload = (event) => {
-  const files = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.photos.push(e.target.result);
-    };
-    reader.readAsDataURL(file);
+watch(() => props.product, (newProduct) => {
+  if (newProduct) {
+    form.name = newProduct.name || '';
+    form.description = newProduct.description || '';
+    form.price = newProduct.price || '';
+    form.category = newProduct.category || '';
+    form.subcategory = newProduct.subcategory || '';
+    form.location = newProduct.location || '';
+    form.condition = newProduct.condition || '';
+    
+    // Only set photos if they exist and are not an empty array
+    if (newProduct.photos && Array.isArray(newProduct.photos) && newProduct.photos.length > 0) {
+      form.photos = newProduct.photos;
+    } else {
+      form.photos = undefined;
+    }
+    
+    productLoaded.value = true;
   }
-};
+}, { immediate: true });
 
-const removePhoto = (index) => {
-  form.photos.splice(index, 1);
-};
+onMounted(() => {
+  console.log('Product data:', props.product);
+});
 
 const submitForm = () => {
-  form.put(route('products.update', props.product.id), {
-    preserveScroll: true,
-    onSuccess: () => {
-      productUpdated.value = true;
-      setTimeout(() => {
-        productUpdated.value = false;
-      }, 5000); // Hide the success message after 5 seconds
-    },
-    onError: () => {
-      productUpdated.value = false;
+  if (!props.product) {
+    console.error('Cannot submit form: Product data is not available');
+    return;
+  }
+  
+  // Create a new object with only the fields that have changed
+  const formData = Object.keys(form).reduce((acc, key) => {
+    if (form[key] !== props.product[key]) {
+      acc[key] = form[key];
     }
+    return acc;
+  }, {});
+
+  // If photos is undefined or an empty array, explicitly set it to null
+  if (!formData.photos || (Array.isArray(formData.photos) && formData.photos.length === 0)) {
+    formData.photos = null;
+  }
+
+  console.log('Submitting form data:', formData);  // Log the data being sent
+
+  form.put(route('products.update', props.product.id), formData, {
+    preserveScroll: true,
+    onSuccess: (page) => {
+      productUpdated.value = true;
+      console.log('Product updated successfully', page);
+      // Redirect to products index page
+      window.location.href = route('products.index');
+    },
+    onError: (errors) => {
+      productUpdated.value = false;
+      console.error('Form submission errors:', errors);
+    },
   });
 };
 </script>
