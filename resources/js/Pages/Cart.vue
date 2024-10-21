@@ -14,7 +14,7 @@
       </h1>
 
       <div class="flex flex-col md:flex-row gap-4">
-        <!-- Cart Items -->
+        <!-- Groza saturs -->
         <div class="md:w-2/3">
           <div
             v-for="(item, productId) in cartItems"
@@ -43,42 +43,31 @@
           <p class="mt-4">{{ Object.keys(cartItems).length }} Items</p>
         </div>
 
-        <!-- Sidebar with Promo Code and Total -->
+        <!-- Informācija par nodokļiem, piegādi un summu -->
         <div class="md:w-1/3">
           <div class="bg-gray-100 p-4 rounded">
-            <h2 class="font-semibold mb-2">ENTER PROMO CODE</h2>
+            <h2 class="font-semibold mb-2">Product/s cost including Delivery</h2>
             <div class="flex">
-              <input
-                v-model="promoCode"
-                type="text"
-                placeholder="Promo Code"
-                class="flex-grow border rounded-l p-2"
-              />
-              <button @click="submitPromoCode" class="bg-black text-white px-4 py-2 rounded-r">
-                Submit
-              </button>
             </div>
             <div class="mt-4">
-              <p class="flex justify-between"><span>Shipping cost</span><span>{{ shippingCost }}</span></p>
-              <p class="flex justify-between"><span>Discount</span><span>-${{ discount.toFixed(2) }}</span></p>
-              <p class="flex justify-between"><span>Tax</span><span>{{ tax }}</span></p>
+              <p class="flex justify-between"><span>Shipping cost</span>Calculating..</p>
+              <p class="flex justify-between"><span>Discount</span><span>None given</span></p>
+              <p class="flex justify-between"><span>VAT</span><span>21%</span></p>
               <p class="flex justify-between font-semibold mt-2">
                 <span>Estimated Total</span><span>${{ totalPrice().toFixed(2) }}</span>
               </p>
             </div>
             <p class="text-sm mt-2">
-              or 4 interest-free payments of ${{ (totalPrice() / 4).toFixed(2) }} with
-              <span class="font-semibold">afterpay</span>
+              Final VAT calculation may differ based on your location and applicable rates.
             </p>
-            <p class="text-sm text-yellow-600 mt-2">
-              You're $10.01 away from free shipping!
+            <p class="text-sm text-violet-600 mt-2">
+              Contact administration for VAT write-off's
             </p>
-            <p @click="redirectToDelivery" 
-              class="text-blue-500 cursor-pointer hover:underline hover:text-blue-700 transition duration-300 ease-in-out">
-              Delivery info
-            </p>
-            <button @click="redirectToStripeCheckout" class="w-full bg-blue-500 text-white font-semibold py-2 rounded mt-4">
-              Pay with Stripe
+            <button @click="redirectToDelivery" class="w-full bg-gradient-to-r from-blue-400 to-green-500 text-white font-semibold py-2 rounded mt-4">
+              Delivery information
+            </button>
+            <button @click="redirectToStripeCheckout" class="w-full bg-gradient-to-r from-blue-400 to-violet-500 text-white font-semibold py-2 rounded mt-4">
+              Pay securely with Stripe
             </button>
           </div>
         </div>
@@ -93,17 +82,14 @@ import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
+import Toast from '@/Components/Toast.vue';
 
-// Accept cartItems as a prop
+// Definē kā objektu
 const props = defineProps({
   cartItems: Object,
 });
 
-// Reactive references
-const promoCode = ref('');
-const shippingCost = ref('TBD');
-const discount = ref(0);
-const tax = ref('TBD');
+
 
 // Compute the total price
 const totalPrice = () =>
@@ -113,13 +99,12 @@ const totalPrice = () =>
   );
 
 // Methods
-const submitPromoCode = () => {
-  console.log('Promo code submitted:', promoCode.value);
-};
 
 const updateQuantity = async (productId, quantity) => {
   await router.post(route('cart.update'), { product_id: productId, quantity });
 };
+
+// Toast domāts priekš produkta noņemšanas paziņojuma
 
 const removeItem = async (productId) => {
   if (confirm('Are you sure you want to remove this item from the cart?')) {

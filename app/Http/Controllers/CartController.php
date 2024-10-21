@@ -36,7 +36,7 @@ class CartController extends Controller
         if (!is_array($cart)) {
             $cart = [];
         }
-
+        // Pievieno daudzumu kad pievieno grozā, sākuma daudzums 1
         if (isset($cart[$productId])) {
             if (!isset($cart[$productId]['quantity']) || !is_numeric($cart[$productId]['quantity'])) {
                 $cart[$productId]['quantity'] = 0;
