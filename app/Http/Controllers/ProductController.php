@@ -44,34 +44,23 @@ class ProductController extends Controller
     }
 
     public function subcategories($category)
-{
-    $products = Product::where('category', $category)->get();
+    {
+        $subcategories = Product::where('category', $category)
+            ->distinct('subcategory')
+            ->pluck('subcategory');
 
-    if ($products->isEmpty()) {
         return Inertia::render('Products/ProductSubcategory', [
             'category' => $category,
-            'subcategories' => [],
-            'message' => 'No products found in this category.'
+            'subcategories' => $subcategories,
+            'message' => $subcategories->isEmpty() ? 'No subcategories found for this category.' : null,
         ]);
     }
-
-    $subcategories = $products->pluck('subcategory')->unique()->values();
-
-    // Log for debugging
-    \Log::info('Category: ' . $category);
-    \Log::info('Subcategories: ' . $subcategories);
-
-    return Inertia::render('Products/ProductSubcategory', [
-        'category' => $category,
-        'subcategories' => $subcategories,
-    ]);
-}
 
     public function listings($category, $subcategory)
     {
         $products = Product::where('category', $category)
-            ->where('subcategory', $subcategory)
-            ->get();
+                        ->where('subcategory', $subcategory)
+                        ->get();
 
         return Inertia::render('Products/ListingProducts', [
             'category' => $category,
@@ -94,37 +83,36 @@ class ProductController extends Controller
 
     public function create()
     {
-        \Log::info('Create method hit');
         return Inertia::render('Products/Create');
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric',
-        'description' => 'nullable|string',
-        'category' => 'required|string',
-        'subcategory' => 'required|string',
-        'condition' => 'required|string',
-        'location' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'description' => 'nullable|string',
+            'category' => 'required|string',
+            'subcategory' => 'required|string',
+            'condition' => 'required|string',
+            'location' => 'required|string',
+        ]);
 
-    $product = Product::create([
-        'name' => $request->name,
-        'price' => $request->price,
-        'description' => $request->description,
-        'category' => $request->category,
-        'subcategory' => $request->subcategory,
-        'condition' => $request->condition,
-        'location' => $request->location,
-        'user_id' => Auth::id(),
-    ]);
+        $product = Product::create([
+            'name' => $request->name,
+            'price' => $request->price,
+            'description' => $request->description,
+            'category' => $request->category,
+            'subcategory' => $request->subcategory,
+            'condition' => $request->condition,
+            'location' => $request->location,
+            'user_id' => Auth::id(),
+        ]);
 
-    // If you're handling photo uploads, process them here
+        // If you're handling photo uploads, process them here
 
-    return redirect()->route('products.index')->with('success', 'Product created successfully.');
-}
+        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+    }
 
     public function edit(Product $product)
     {
@@ -168,13 +156,13 @@ class ProductController extends Controller
     }
 
     public function show($id)
-    {
-        $product = Product::findOrFail($id);
-
-        return Inertia::render('Products/ProductShow', [
-            'product' => $product,
-        ]);
-    }
+{
+    $product = Product::findOrFail($id);
+    
+    return Inertia::render('Products/ProductShow', [
+        'product' => $product
+    ]);
+}
 
     public function registerClick(Request $request, $id)
     {

@@ -1,11 +1,10 @@
 <template>
-    <GuestLayout>
       <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">{{ category }} - Subcategories</h1>
-        
-        <div v-if="subcategories.length === 0" class="text-center py-8">
-          <p>No subcategories found for this category.</p>
-        </div>
+        <h1 class="text-3xl font-bold mb-6">{{ category }} - {{ subcategory ? subcategory : 'Subcategories' }}</h1>
+      
+      <div v-if="message" class="text-center py-8">
+        <p class="text-red-500">{{ message }}</p>
+      </div>
         
         <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div v-for="subcategory in subcategories" :key="subcategory" 
@@ -18,15 +17,17 @@
           </div>
         </div>
       </div>
-    </GuestLayout>
   </template>
   
-  <script setup>
-  import { Link } from '@inertiajs/vue3';
-  import GuestLayout from '@/Layouts/GuestLayout.vue';
-  
-  defineProps({
-    category: String,
-    subcategories: Array,
-  });
+<script setup>
+import { Link } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+
+defineProps({
+  category: String,
+  subcategory: String,
+  subcategories: Array,
+  products: Array,
+  message: String
+});
   </script>
