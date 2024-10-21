@@ -20,6 +20,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 </script>
 
 <style scoped>
+/* Dizains */
 .text-red-600 {
   color: #f56565;
 }

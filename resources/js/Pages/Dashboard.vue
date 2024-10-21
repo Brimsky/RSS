@@ -9,7 +9,7 @@
                     <div class="space-y-8">
                         <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6">
                             <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-bold">Seller rating</h2>
+                                <h2 class="text-2xl font-bold">Your rating</h2>
                                 <div class="flex items-center">
                                     <span class="text-4xl font-bold mr-2">0</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -23,18 +23,21 @@
                                     <div class="text-lg">Active</div>
                                 </div>
                                 <div class="space-y-4 flex-grow">
-                                    <a href="products/create">
-                                        <button class="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition duration-300">
-                                            <span class="text-2xl">+</span>
-                                            <span>Create new listing</span>
+                                    <!-- Показываем кнопки создания и управления только для seller -->
+                                    <template v-if="$page.props.auth.user.role === 'seller'">
+                                        <a href="products/create">
+                                            <button class="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-600 transition duration-300">
+                                                <span class="text-2xl">+</span>
+                                                <span>Create new listing</span>
+                                            </button>
+                                        </a>
+                                        <button class="w-full flex items-center justify-center space-x-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg text-lg hover:bg-gray-300 transition duration-300">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                            <span>Inactive listings</span>
                                         </button>
-                                    </a>
-                                    <button class="w-full flex items-center justify-center space-x-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg text-lg hover:bg-gray-300 transition duration-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        <span>Inactive listings</span>
-                                    </button>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -52,7 +55,15 @@
                                         <p class="text-2xl font-bold text-gray-700">${{ parseFloat(product.price).toFixed(2) }}</p>
                                         <p class="text-gray-500">{{ product.description }}</p>
                                     </div>
-                                    <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">Mark as sold</button>
+                                    <!-- Для seller показываем кнопку "Mark as sold", для buyer - кнопку "Buy" -->
+                                    <template v-if="$page.props.auth.user.role === 'seller'">
+                                        <button class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-lg hover:bg-blue-200 transition duration-300">
+                                            Mark as sold
+                                        </button>
+                                    </template>
+                                    <template v-else>
+                                       
+                                    </template>
                                 </div>
                             </div>
                             <a href="/products" class="absolute bottom-6 right-6 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">
@@ -73,7 +84,7 @@
                                     </svg>
                                     <span class="text-xl">Clicks on listings</span>
                                 </div>
-                                <span class="text-4xl font-bold">{{ totalClicks }}</span> <!-- Adding the total number of clicks -->
+                                <span class="text-4xl font-bold">{{ totalClicks }}</span>
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
                                 <div class="flex items-center space-x-4">
@@ -94,27 +105,36 @@
 
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
-  products: Array,
-  totalClicks: Number, // Adding totalClicks for passing the number of clicks
+    products: Array,
+    totalClicks: Number,
 });
 
-const limit = ref(3); // Limit the number of displayed products
+const limit = ref(3);
 
 const limitedProducts = computed(() => {
-  return props.products.slice(0, limit.value);
+    return props.products.slice(0, limit.value);
 });
 
-// Function to register clicks
 const registerClick = async (productId) => {
-  try {
-    await axios.post(`/products/${productId}/register-click`);
-  } catch (error) {
-    console.error('Error registering click:', error);
-  }
+    try {
+        await axios.post(`/products/${productId}/register-click`);
+    } catch (error) {
+        console.error('Error registering click:', error);
+    }
+};
+
+// Добавляем метод для покупки товара
+const buyProduct = async (productId) => {
+    try {
+        await axios.post(`/products/${productId}/buy`);
+        // Здесь можно добавить уведомление об успешной покупке
+    } catch (error) {
+        console.error('Error buying product:', error);
+    }
 };
 </script>
