@@ -1,14 +1,12 @@
 <template>
-  <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-    <!-- Кнопка открытия/закрытия формы -->
+  <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md justify-center">
     <button 
       @click="toggleForm" 
-      class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors duration-300"
+      class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors duration-300 justify-center"
     >
       {{ showForm ? 'Close Form' : 'Open Form' }}
     </button>
 
-    <!-- Форма доставки (показывается только если showForm = true) -->
     <form v-if="showForm" @submit.prevent="submitForm" class="space-y-4 mt-4">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
@@ -68,7 +66,6 @@
       </div>
     </form>
 
-    <!-- Уведомление об успешном отправлении -->
     <div v-if="successMessage" class="mt-6 p-4 bg-green-100 text-green-700 border border-green-400 rounded-lg">
       {{ successMessage }}
     </div>
@@ -108,20 +105,17 @@ export default {
         email: '',
       };
 
-      // Проверяем имя
       if (!this.formData.name) {
         this.errors.name = 'Name is required.';
         isValid = false;
       }
 
-      // Проверяем адрес
       if (!this.formData.address) {
         this.errors.address = 'Address is required.';
         isValid = false;
       }
 
-      // Проверяем телефон (например, проверка на минимум 10 символов)
-      const phonePattern = /^[+]?[\d\s\-()]+$/; // Простая проверка для телефона
+      const phonePattern = /^[+]?[\d\s\-()]+$/; 
       if (!this.formData.phone) {
         this.errors.phone = 'Phone number is required.';
         isValid = false;
@@ -130,8 +124,7 @@ export default {
         isValid = false;
       }
 
-      // Проверяем email
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Простая проверка для email
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
       if (!this.formData.email) {
         this.errors.email = 'Email is required.';
         isValid = false;
@@ -144,7 +137,7 @@ export default {
     },
     async submitForm() {
       if (!this.validateForm()) {
-        return; // Если форма не валидна, не отправляем данные
+        return; 
       }
 
       try {

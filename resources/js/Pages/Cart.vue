@@ -73,6 +73,10 @@
             <p class="text-sm text-yellow-600 mt-2">
               You're $10.01 away from free shipping!
             </p>
+            <p @click="redirectToDelivery" 
+              class="text-blue-500 cursor-pointer hover:underline hover:text-blue-700 transition duration-300 ease-in-out">
+              Delivery info
+            </p>
             <button @click="redirectToStripeCheckout" class="w-full bg-blue-500 text-white font-semibold py-2 rounded mt-4">
               Pay with Stripe
             </button>
@@ -158,6 +162,11 @@ const redirectToStripeCheckout = async () => {
     console.error('Error creating checkout session:', error);
   }
 };
+
+const redirectToDelivery = () => {
+  router.get(route('delivery.index'));
+};
+
 </script>
 
 <style scoped>

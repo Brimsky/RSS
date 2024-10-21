@@ -12,65 +12,36 @@
           <DeliveryOptions />
         </div>
 
-        <!-- Кнопка открытия формы заполнения данных для доставки -->
         <div>
           <button @click="openForm" class="mt-8 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:from-blue-600 hover:to-blue-800 hover:shadow-xl">
             Fill Delivery Information
           </button>
-
         </div>
 
-        <!-- Вставляем компонент DeliveryForm вместо ручной формы -->
         <div v-if="isFormVisible" class="mt-8">
           <DeliveryForm />
         </div>
 
-        <!-- Калькулятор стоимости доставки -->
-        <div class="mt-8">
+        <div class="mt-8 justify-center">
           <DeliveryCalculator />
         </div>
 
-        <!-- Отслеживание заказа -->
         <div class="mt-8">
           <OrderTracking />
         </div>
 
-        <!-- Часто задаваемые вопросы -->
         <div class="mt-8">
           <h2 class="text-2xl font-semibold mb-4">Delivery FAQs</h2>
           <div class="faq-item mb-4">
             <h3 class="font-bold">When will my order arrive?</h3>
-            <p>Most orders are delivered within 3-5 business days.</p>
+            <p>Most orders are delivered within 3-9 business days.</p>
           </div>
           <div class="faq-item mb-4">
             <h3 class="font-bold">Can I change my delivery address?</h3>
             <p>Yes, you can update your address before the order is shipped.</p>
           </div>
         </div>
-
-        <!-- Карта пунктов самовывоза -->
         <delivery-map :pickupPoints="pickupPoints"></delivery-map>
-
-        <!-- Выбор типа доставки -->
-        <div class="mt-8">
-          <h2 class="text-2xl font-semibold mb-4">Choose Your Delivery Service</h2>
-          <div class="flex space-x-4">
-            <button @click="selectDelivery('Standard Delivery')" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-700">
-              Standard Delivery
-            </button>
-            <button @click="selectDelivery('Express Delivery')" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-700">
-              Express Delivery
-            </button>
-            <button @click="selectDelivery('Same-Day Delivery')" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
-              Same-Day Delivery
-            </button>
-          </div>
-        </div>
-
-        <!-- Сообщение об успешном выборе -->
-        <div v-if="successMessage" class="mt-4 p-4 bg-green-100 text-green-700 border border-green-400 rounded">
-          {{ successMessage }}
-        </div>
       </div>
     </div>
   </AuthenticatedLayout>
@@ -82,7 +53,7 @@ import DeliveryOptions from './DeliveryOptions.vue';
 import DeliveryCalculator from './DeliveryCalculator.vue';
 import OrderTracking from './OrderTracking.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import DeliveryForm from './DeliveryForm.vue'; // Импортируем компонент
+import DeliveryForm from './DeliveryForm.vue'; 
 
 export default {
   components: {
@@ -91,7 +62,7 @@ export default {
     DeliveryOptions,
     DeliveryCalculator,
     OrderTracking,
-    DeliveryForm, // Регистрируем компонент
+    DeliveryForm, 
   },
 
   data() {
@@ -99,38 +70,21 @@ export default {
       isFormVisible: false,
       successMessage: '',
       pickupPoints: [
-        { lat: 40.7128, lng: -74.006, name: 'Pickup Point 1 - New York' },
-        { lat: 56.9496, lng: 24.1052, name: 'Pickup Point 1 - Riga, Latvia' }
+        { lat: 56.9496, lng: 24.1052, name: 'Pickup Point 1 - Riga, Latvia' },
+        { lat: 54.6872, lng: 25.2797, name: 'Pickup Point 1 - Vilnius, Lithuania' },
+        { lat: 59.437, lng: 24.7536, name: 'Pickup Point 1 - Tallinn, Estonia' },
+        { lat: 52.2297, lng: 21.0122, name: 'Pickup Point 1 - Warsaw, Poland' },
+        { lat: 60.1695, lng: 24.9354, name: 'Pickup Point 1 - Helsinki, Finland' },
+        { lat: 59.3293, lng: 18.0686, name: 'Pickup Point 1 - Stockholm, Sweden' },
+        { lat: 52.5200, lng: 13.4050, name: 'Pickup Point 1 - Berlin, Germany' },
+        { lat: 55.7558, lng: 37.6173, name: 'Pickup Point 1 - Moscow, Russia' }
       ],
     };
   },
 
   methods: {
     openForm() {
-      this.isFormVisible = true; // Открываем форму
-    },
-    async selectDelivery(serviceType) {
-      try {
-        const response = await fetch('/api/delivery-selection', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ serviceType }),
-        });
-
-        if (response.ok) {
-          this.successMessage = `You have successfully selected ${serviceType}.`;
-        } else {
-          this.successMessage = 'An error occurred. Please try again.';
-        }
-      } catch (error) {
-        this.successMessage = 'An error occurred. Please try again.';
-      }
-
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 5000);
+      this.isFormVisible = true; 
     },
   },
 };
