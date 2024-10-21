@@ -118,6 +118,7 @@ onMounted(async () => {
   stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 });
 
+
 // Redirect to Stripe Checkout
 const redirectToStripeCheckout = async () => {
   try {
