@@ -41,8 +41,7 @@ class ProductSeeder extends Seeder
                 'condition' => $conditions[array_rand($conditions)],
                 'location' => $locations[array_rand($locations)],
                 'photos' => json_encode([
-                    "https://picsum.photos/200/300?random=" . ($i + 1),
-                    "https://picsum.photos/200/300?random=" . ($i + 2)
+                    "https://picsum.photos/200/300?random=" . (3),
                 ]),
                 'clicks' => rand(0, 100),
             ]);

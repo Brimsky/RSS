@@ -51,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('success');
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 });
+//nekustinat no vietas 
+//obligati but virs categroijam un subkategroijam
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 
 // These routes should be at the bottom to avoid conflicts
 Route::get('/products/{category}', [ProductController::class, 'subcategories'])->name('products.subcategories');
