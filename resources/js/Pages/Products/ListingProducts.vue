@@ -1,5 +1,28 @@
 <template>
     <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header Section with Back Button -->
+        <div class="mb-4">
+            <!-- Back Button -->
+            <Link
+                :href="route('products.subcategories', { category })"
+                class="flex items-center text-gray-600 hover:text-purple-600 transition-colors duration-300"
+            >
+                <svg
+                    class="h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7"
+                    />
+                </svg>
+                Back to {{ category }}
+            </Link>
+        </div>
         <!-- Header Section -->
         <div class="mb-8">
             <h1
