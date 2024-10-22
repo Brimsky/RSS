@@ -15,60 +15,95 @@
                     </template>
                 </div>
 
-                <!-- Product Table -->
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Description</th>
-                            <th class="text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="product in products" :key="product.id">
-                            <td class="font-semibold">
-                                <Link
-                                    :href="route('products.show', product.id)"
-                                    class="text-blue-600 hover:underline"
-                                    @click="registerClick(product.id)"
-                                >
-                                    {{ product.name }}
-                                </Link>
-                            </td>
-                            <td>${{ parseFloat(product.price).toFixed(2) }}</td>
-                            <td>{{ product.description }}</td>
-                            <td class="text-right">
-                                <template
-                                    v-if="
-                                        $page.props.auth.user.role === 'seller'
-                                    "
-                                >
-                                    <Link
-                                        :href="
-                                            route('products.edit', product.id)
-                                        "
-                                        class="btn btn-warning mr-2"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
-                                        @click="deleteProduct(product.id)"
-                                        class="btn btn-danger mr-2"
-                                    >
-                                        Delete
-                                    </button>
-                                </template>
+                <!-- Grid Product Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        v-for="product in products"
+                        :key="product.id"
+                        class="bg-white p-4 rounded-lg shadow-lg relative"
+                    >
+                        <!-- Product Image -->
+                        <img
+                            v-if="product.image"
+                            :src="product.image"
+                            alt="Product Image"
+                            class="w-full h-32 object-cover mb-4 rounded-md"
+                        />
+
+                        <!-- Product Name -->
+                        <h2 class="font-semibold text-lg mb-2">
+                            <Link
+                                :href="route('products.show', product.id)"
+                                class="text-blue-600 hover:underline"
+                                @click="registerClick(product.id)"
+                            >
+                                {{ product.name }}
+                            </Link>
+                        </h2>
+
+                        <!-- Product Price -->
+                        <p class="text-gray-600 mb-4">
+                            ${{ parseFloat(product.price).toFixed(2) }}
+                        </p>
+
+                        <!-- Product Description -->
+                        <p class="text-sm text-gray-500 mb-4">
+                            {{ product.description }}
+                        </p>
+
+                        <!-- Actions -->
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <!-- Add to Cart Button -->
                                 <button
                                     @click="addToCart(product)"
                                     class="btn btn-primary"
                                 >
                                     Add to Cart
                                 </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+                                <!-- Listing Saves Icon -->
+                                <button
+                                    @click="saveProduct(product)"
+                                    class="p-1 rounded hover:bg-gray-200 transition"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-6 w-6 text-gray-500"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Edit/Delete Actions for Seller -->
+                            <template v-if="$page.props.auth.user.role === 'seller'">
+                                <div class="flex space-x-2">
+                                    <Link
+                                        :href="route('products.edit', product.id)"
+                                        class="btn btn-warning"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <button
+                                        @click="deleteProduct(product.id)"
+                                        class="btn btn-danger"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <Toast v-if="toastMessage" :message="toastMessage" />
@@ -93,6 +128,18 @@ const registerClick = async (productId) => {
         await axios.post(`/products/${productId}/register-click`);
     } catch (error) {
         console.error("Error registering click:", error);
+    }
+};
+
+const saveProduct = async (product) => {
+    try {
+        await axios.post(`/products/${product.id}/save`);
+        toastMessage.value = "Product saved!";
+        setTimeout(() => {
+            toastMessage.value = null;
+        }, 3000);
+    } catch (error) {
+        console.error("Error saving product:", error);
     }
 };
 
@@ -184,61 +231,52 @@ h1 {
     background-color: #e53e3e;
 }
 
-/* Table styling */
-.table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 1rem;
+/* Grid Styling */
+.grid {
+    display: grid;
+    gap: 1.5rem;
 }
 
-.table th,
-.table td {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid #e2e8f0;
+.grid-cols-1 {
+    grid-template-columns: 1fr;
 }
 
-.table th {
-    font-weight: 600;
-    text-align: left;
-    background-color: #f7fafc;
+.md\\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
 }
 
-.table tr:hover {
-    background-color: #f7fafc;
+.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
 }
 
-/* Layout styling */
-.flex {
-    display: flex;
+/* Card styling */
+.bg-white {
+    background-color: white;
 }
 
-.justify-between {
-    justify-content: space-between;
+.p-4 {
+    padding: 1rem;
 }
 
-.items-center {
-    align-items: center;
+.rounded-lg {
+    border-radius: 0.5rem;
 }
 
-.mt-4 {
-    margin-top: 1rem;
+.shadow-lg {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-.text-right {
-    text-align: right;
+/* Image styling */
+.img {
+    max-width: 100%;
+    height: auto;
 }
 
-.font-semibold {
-    font-weight: 600;
+.object-cover {
+    object-fit: cover;
 }
 
-.text-blue-600 {
-    color: #4299e1;
-}
-
-.text-blue-600:hover {
-    text-decoration: underline;
+.mb-4 {
+    margin-bottom: 1rem;
 }
 </style>
