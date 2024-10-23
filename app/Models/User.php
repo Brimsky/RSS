@@ -21,7 +21,10 @@ class User extends Authenticatable implements HasMedia
         'password',
         'remember_token',
     ];
-
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
     protected function casts(): array
     {
         return [

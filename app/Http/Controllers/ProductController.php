@@ -6,7 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // Add this import
+use Illuminate\Support\Facades\Log; 
 
 class ProductController extends Controller
 {
@@ -18,7 +18,9 @@ class ProductController extends Controller
         $subcategory = $request->input("subcategory");
 
         $products = Product::query()
-            ->where("user_id", $user->id) // Filter products by user_id
+            ->when(!$user->admin, function ($query) use ($user) {
+                return $query->where("user_id", $user->id); 
+            })
             ->when($search, function ($query, $search) {
                 return $query
                     ->where("name", "like", "%$search%")
@@ -32,11 +34,13 @@ class ProductController extends Controller
             })
             ->get();
 
-        $categories = Product::where("user_id", $user->id)
-            ->distinct("category")
+        $categories = Product::distinct("category")
+            ->when(!$user->admin, function ($query) use ($user) {
+                return $query->where("user_id", $user->id); 
+            })
             ->pluck("category");
-        $subcategories = Product::where("user_id", $user->id)
-            ->when($category, function ($query, $category) {
+
+        $subcategories = Product::when($category, function ($query, $category) {
                 return $query->where("category", $category);
             })
             ->distinct("subcategory")
@@ -120,8 +124,6 @@ class ProductController extends Controller
             "user_id" => Auth::id(),
         ]);
 
-        // If you're handling photo uploads, process them here
-
         return redirect()
             ->route("products.index")
             ->with("success", "Product created successfully.");
@@ -135,57 +137,60 @@ class ProductController extends Controller
             "product_user_id" => $product->user_id,
         ]);
 
-        if ($product->user_id !== Auth::id()) {
-            Log::warning("Unauthorized edit attempt", [
-                "user_id" => Auth::id(),
-                "product_id" => $product->id,
-            ]);
-            return redirect()
-                ->route("products.index")
-                ->with(
-                    "error",
-                    "You do not have permission to edit this product."
-                );
-        }
-
-        return Inertia::render("Products/Edit", [
-            "product" => $product,
+   
+    if (Auth::user()->role !== 'admin' && $product->user_id !== Auth::id()) {
+        Log::warning("Unauthorized edit attempt", [
+            "user_id" => Auth::id(),
+            "product_id" => $product->id,
         ]);
+        return redirect()
+            ->route("products.index")
+            ->with(
+                "error",
+                "You do not have permission to edit this product."
+            );
     }
 
-    public function update(Request $request, Product $product)
-    {
-        Log::info("Accessing update method", [
-            "product_id" => $product->id,
+    return Inertia::render("Products/Edit", [
+        "product" => $product
+    ]);
+}
+
+
+public function update(Request $request, Product $product)
+{
+    Log::info("Accessing update method", [
+        "product_id" => $product->id,
+        "user_id" => Auth::id(),
+        "product_user_id" => $product->user_id,
+        "request_data" => $request->all(),
+    ]);
+
+
+    if (Auth::user()->role !== 'admin' && $product->user_id !== Auth::id()) {
+        Log::warning("Unauthorized update attempt", [
             "user_id" => Auth::id(),
-            "product_user_id" => $product->user_id,
-            "request_data" => $request->all(),
+            "product_id" => $product->id,
         ]);
+        return redirect()
+            ->route("products.index")
+            ->with(
+                "error",
+                "You do not have permission to update this product."
+            );
+    }
 
-        if ($product->user_id !== Auth::id()) {
-            Log::warning("Unauthorized update attempt", [
-                "user_id" => Auth::id(),
-                "product_id" => $product->id,
-            ]);
-            return redirect()
-                ->route("products.index")
-                ->with(
-                    "error",
-                    "You do not have permission to update this product."
-                );
-        }
-
-        try {
-            $validated = $request->validate([
-                "name" => "required|string|max:255",
-                "price" => "required|numeric",
-                "description" => "nullable|string",
-                "category" => "required|string",
-                "subcategory" => "required|string",
-                "condition" => "required|string",
-                "location" => "required|string",
-                "photos" => "nullable", // Make it nullable and remove JSON validation
-            ]);
+    try {
+        $validated = $request->validate([
+            "name" => "required|string|max:255",
+            "price" => "required|numeric",
+            "description" => "nullable|string",
+            "category" => "required|string",
+            "subcategory" => "required|string",
+            "condition" => "required|string",
+            "location" => "required|string",
+            "photos" => "nullable",
+        ]);
 
             Log::info("Validation passed", [
                 "product_id" => $product->id,
@@ -235,22 +240,20 @@ class ProductController extends Controller
     }
 
     public function destroy(Product $product)
-    {
-        if ($product->user_id !== Auth::id()) {
-            return redirect()
-                ->route("products.index")
-                ->with(
-                    "error",
-                    "You do not have permission to delete this product."
-                );
-        }
-
-        $product->delete();
-
-        return redirect()
-            ->route("products.index")
-            ->with("success", "Product deleted successfully.");
+{
+ 
+    if ($product->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+        return response()->json([
+            'error' => 'You do not have permission to delete this product.'
+        ], 422);
     }
+
+    $product->delete();
+
+    return response()->json([
+        'message' => 'Product deleted successfully'
+    ]);
+}
 
     public function show($id)
     {

@@ -4,8 +4,10 @@
             <div class="container">
                 <!-- Header Section -->
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold">Product List</h1>
-                    <template v-if="$page.props.auth.user.role === 'seller'">
+                    <h1 class="text-3xl font-bold">Product List
+                    </h1>
+                    <template v-if="$page.props.auth.user.role === 'seller' || $page.props.auth.user.role === 'admin'">
+
                         <Link
                             :href="route('products.create')"
                             class="btn btn-primary"
@@ -85,7 +87,7 @@
                             </div>
 
                             <!-- Edit/Delete Actions for Seller -->
-                            <template v-if="$page.props.auth.user.role === 'seller'">
+                            <template v-if="$page.props.auth.user.role === 'seller' || $page.props.auth.user.role === 'admin'">
                                 <div class="flex space-x-2">
                                     <Link
                                         :href="route('products.edit', product.id)"
