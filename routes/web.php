@@ -7,7 +7,11 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DeliveryController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+
 
 // Public routes
 Route::get("/", function () {
@@ -110,5 +114,27 @@ Route::get("/products/{category}/{subcategory}", [
 Route::get("/products/{id}", [ProductController::class, "show"])->name(
     "products.show"
 );
+
+// Chat routes
+Route::get('/chat/{seller?}', function ($seller = null) {
+    return Inertia::render('Chat', ['seller' => $seller]);
+})->name('chat');
+
+Route::get('/chat', function () {
+    return Inertia::render('Chat');
+})->name('chat');
+
+// Message routes
+Route::get('/messages', [MessageController::class, 'index']);
+Route::post('/api/messages', [MessageController::class, 'store']);
+
+// User routes
+Route::get('/users', [UserController::class, 'index']);
+Route::get('/api/users', function () {
+    return \App\Models\User::all();
+});
+Route::get('/api/current-user', function () {
+    return Auth::user();
+});
 
 require __DIR__ . "/auth.php";

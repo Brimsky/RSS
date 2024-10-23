@@ -116,7 +116,9 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row gap-4">
-            <button class="flex-1 bg-purple-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-300">
+            <button 
+              @click="contactSeller(product.seller_id)"
+              class="flex-1 bg-purple-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-300">
               Contact Seller
             </button>
             <button @click="addToCart(product)" class="flex-1 bg-gray-100 text-gray-700 px-8 py-3 rounded-xl font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-300">
@@ -150,7 +152,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import Toast from '@/Components/Toast.vue';
 
 const props = defineProps({
@@ -191,6 +193,10 @@ const addToCart = (product) => {
       console.error('Error adding product to cart:', errors);
     },
   });
+};
+
+const contactSeller = (sellerId) => {
+  router.get(route('chat', { seller: sellerId }));
 };
 
 const formatPrice = (price) => {
