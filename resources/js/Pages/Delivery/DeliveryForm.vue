@@ -8,6 +8,21 @@
     </button>
 
     <form v-if="showForm" @submit.prevent="submitForm" class="space-y-4 mt-4">
+      
+      <!-- Service Type -->
+      <div>
+        <label for="serviceType" class="block text-sm font-medium text-gray-700">Service Type</label>
+        <input
+          type="text"
+          id="serviceType"
+          v-model="formData.serviceType"
+          placeholder="Delivery Service Type"
+          class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        />
+        <span v-if="errors.serviceType" class="text-red-500 text-sm">{{ errors.serviceType }}</span>
+      </div>
+
+      <!-- Name -->
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
         <input
@@ -20,6 +35,7 @@
         <span v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</span>
       </div>
 
+      <!-- Address -->
       <div>
         <label for="address" class="block text-sm font-medium text-gray-700">Your Address</label>
         <input
@@ -32,6 +48,7 @@
         <span v-if="errors.address" class="text-red-500 text-sm">{{ errors.address }}</span>
       </div>
 
+      <!-- Phone -->
       <div>
         <label for="phone" class="block text-sm font-medium text-gray-700">Your Phone</label>
         <input
@@ -44,6 +61,7 @@
         <span v-if="errors.phone" class="text-red-500 text-sm">{{ errors.phone }}</span>
       </div>
 
+      <!-- Email -->
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700">Your Email</label>
         <input
@@ -78,12 +96,14 @@ export default {
     return {
       showForm: true,
       formData: {
+        serviceType: '',  // добавили поле serviceType
         name: '',
         address: '',
         phone: '',
         email: '',
       },
       errors: {
+        serviceType: '',
         name: '',
         address: '',
         phone: '',
@@ -99,22 +119,32 @@ export default {
     validateForm() {
       let isValid = true;
       this.errors = {
+        serviceType: '',
         name: '',
         address: '',
         phone: '',
         email: '',
       };
 
+      // Validate Service Type
+      if (!this.formData.serviceType) {
+        this.errors.serviceType = 'Service Type is required.';
+        isValid = false;
+      }
+
+      // Validate Name
       if (!this.formData.name) {
         this.errors.name = 'Name is required.';
         isValid = false;
       }
 
+      // Validate Address
       if (!this.formData.address) {
         this.errors.address = 'Address is required.';
         isValid = false;
       }
 
+      // Validate Phone
       const phonePattern = /^[+]?[\d\s\-()]+$/; 
       if (!this.formData.phone) {
         this.errors.phone = 'Phone number is required.';
@@ -124,6 +154,7 @@ export default {
         isValid = false;
       }
 
+      // Validate Email
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
       if (!this.formData.email) {
         this.errors.email = 'Email is required.';
@@ -153,6 +184,7 @@ export default {
         if (response.ok) {
           this.successMessage = 'Delivery information saved successfully!';
           this.formData = {
+            serviceType: '',  // Очистка поля serviceType
             name: '',
             address: '',
             phone: '',
