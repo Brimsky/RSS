@@ -12,7 +12,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    protected $rootView = 'app';
+    protected $rootView = "app";
 
     /**
      * Determine the current asset version.
@@ -31,20 +31,24 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'auth' => [
-            'user' => $request->user() ? [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'email' => $request->user()->email,
-                'role' => $request->user()->role,
-                'media' => $request->user()->media->map(function ($media) {
-                    return [
-                        'id' => $media->id,
-                        'file_name' => $media->file_name,
-                    ];
-                }),
-            ] : null,
-        ],
+            "auth" => [
+                "user" => $request->user()
+                    ? [
+                        "id" => $request->user()->id,
+                        "name" => $request->user()->name,
+                        "email" => $request->user()->email,
+                        "role" => $request->user()->role,
+                        "media" => $request
+                            ->user()
+                            ->media->map(function ($media) {
+                                return [
+                                    "id" => $media->id,
+                                    "file_name" => $media->file_name,
+                                ];
+                            }),
+                    ]
+                    : null,
+            ],
         ];
     }
 }

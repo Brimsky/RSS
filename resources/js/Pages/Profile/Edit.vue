@@ -3,8 +3,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
+
+// Получаем доступ к странице через composable
+const page = usePage();
 
 const props = defineProps({
     mustVerifyEmail: Boolean,
@@ -14,7 +17,9 @@ const props = defineProps({
         required: true,
     },
 });
+
 const avatarUrl = ref(null);
+
 // Метод для получения URL аватара
 const getAvatarUrl = () => {
     if (props.user.media && props.user.media.length > 0) {
@@ -30,6 +35,7 @@ onMounted(() => {
     console.log('User data:', props.user);
     avatarUrl.value = getAvatarUrl();
     console.log('Avatar URL:', avatarUrl.value);
+    console.log('User role:', page.props.auth.user.role);
 });
 </script>
 
@@ -39,6 +45,17 @@ onMounted(() => {
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>
         </template>
+
+        <!-- Используем page.props вместо $page.props -->
+        <div v-if="page.props.auth.user.role === 'admin'" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <h3 class="text-lg font-medium text-gray-900">Admin Controls</h3>
+            <div class="mt-4">
+                <Link :href="route('admin.index')" class="btn-primary">
+                    Go to Admin Panel
+                </Link>
+            </div>
+        </div>
+
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <!-- Avatar display section -->
@@ -58,6 +75,7 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
+
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
@@ -66,9 +84,11 @@ onMounted(() => {
                         class="max-w-xl"
                     />
                 </div>
+
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <UpdatePasswordForm class="max-w-xl" />
                 </div>
+
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <DeleteUserForm class="max-w-xl" />
                 </div>

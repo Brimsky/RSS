@@ -11,8 +11,8 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-
-
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\UserController;
 // Public routes
 Route::get("/", function () {
     $search = request("search");
@@ -108,33 +108,29 @@ Route::get("/categories/{category}", [
     "subcategories",
 ])->name("products.subcategories");
 Route::get("/products/{category}/{subcategory}", [
-    ProductController::class,
-    "listings",
-])->name("products.listings");
+    ProductController::class,"listings",])->name("products.listings");
 Route::get("/products/{id}", [ProductController::class, "show"])->name(
     "products.show"
 );
-
-// Chat routes
-Route::get('/chat/{seller?}', function ($seller = null) {
-    return Inertia::render('Chat', ['seller' => $seller]);
-})->name('chat');
-
-Route::get('/chat', function () {
-    return Inertia::render('Chat');
-})->name('chat');
-
-// Message routes
-Route::get('/messages', [MessageController::class, 'index']);
-Route::post('/api/messages', [MessageController::class, 'store']);
-
-// User routes
-Route::get('/users', [UserController::class, 'index']);
-Route::get('/api/users', function () {
-    return \App\Models\User::all();
-});
-Route::get('/api/current-user', function () {
-    return Auth::user();
-});
+    Route::prefix('admin')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+        
+        // User management routes
+        Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+        Route::put('/products/{product}', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+        Route::post('/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+        Route::delete('/products/{product}', [AdminController::class, 'destroyProduct'])->name('admin.products.destroy');
+        
+        // Product management routes
+        Route::resource('products', ProductController::class)->names([
+            'index' => 'admin.products.index',
+            'create' => 'admin.products.create',
+            'store' => 'admin.products.store',
+            'edit' => 'admin.products.edit',
+            'update' => 'admin.products.update',
+            'destroy' => 'admin.products.destroy',
+        ]);
+    });
 
 require __DIR__ . "/auth.php";
