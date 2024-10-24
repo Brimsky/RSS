@@ -72,7 +72,10 @@ Route::middleware(["auth"])->group(function () {
         ProductController::class,
         "registerClick",
     ])->name("products.registerClick");
-
+    Route::post("/products/{id}/save", [
+        ProductController::class,
+        "registerSave",
+    ])->name("products.save");
     Route::get("/cart", [CartController::class, "index"])->name("cart");
     Route::post("/cart/add", [CartController::class, "add"])->name("cart.add");
     Route::post("/cart/update", [CartController::class, "update"])->name(
