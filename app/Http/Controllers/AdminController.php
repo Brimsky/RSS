@@ -11,75 +11,73 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Admin/Index', [
-            'products' => Product::all(),
-            'users' => User::all()
+        return Inertia::render("Admin/Index", [
+            "products" => Product::all(),
+            "users" => User::all(),
         ]);
     }
 
     public function updateUser(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:buyer,seller,admin',
+            "name" => "required|string|max:255",
+            "email" => "required|email|unique:users,email," . $user->id,
+            "role" => "required|in:buyer,seller,admin",
         ]);
 
         $user->update($validated);
 
-        return redirect()->back()->with('success', 'User updated successfully');
+        return redirect()->back()->with("success", "User updated successfully");
     }
 
     public function destroyUser(User $user)
     {
-        if ($user->role === 'admin') {
-            return back()->with('error', 'Cannot delete admin user');
+        if ($user->role === "admin") {
+            return back()->with("error", "Cannot delete admin user");
         }
 
         $user->delete();
-        return back()->with('success', 'User deleted successfully');
+        return back()->with("success", "User deleted successfully");
     }
 
     public function updateProduct(Request $request, $id)
-{
-    $product = Product::findOrFail($id);
-    
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric|min:0',
-        'description' => 'required|string',
-        'image' => 'nullable|string'
-    ]);
-    
-    $product->update($validated);
-    
- 
-    return back()->with([
-        'success' => 'Product updated successfully',
-        'products' => Product::all()
-    ]);
-}
+    {
+        $product = Product::findOrFail($id);
 
-public function storeProduct(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric|min:0',
-        'description' => 'required|string',
-        'image' => 'nullable|string'
-    ]);
-    
-    Product::create($validated);
-    
+        $validated = $request->validate([
+            "name" => "required|string|max:255",
+            "price" => "required|numeric|min:0",
+            "description" => "required|string",
+            "image" => "nullable|string",
+        ]);
 
-    return back()->with([
-        'success' => 'Product created successfully',
-        'products' => Product::all()
-    ]);
-}
+        $product->update($validated);
 
-public function destroyProduct(Product $product)
-{
-    $product->delete();
-}
+        return back()->with([
+            "success" => "Product updated successfully",
+            "products" => Product::all(),
+        ]);
+    }
+
+    public function storeProduct(Request $request)
+    {
+        $validated = $request->validate([
+            "name" => "required|string|max:255",
+            "price" => "required|numeric|min:0",
+            "description" => "required|string",
+            "image" => "nullable|string",
+        ]);
+
+        Product::create($validated);
+
+        return back()->with([
+            "success" => "Product created successfully",
+            "products" => Product::all(),
+        ]);
+    }
+
+    public function destroyProduct(Product $product)
+    {
+        $product->delete();
+    }
 }

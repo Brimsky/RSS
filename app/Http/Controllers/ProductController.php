@@ -340,9 +340,9 @@ class ProductController extends Controller
 
         $product->delete();
 
-        // return response()->json([
-        //     'message' => 'Product deleted successfully'
-        // ]);
+        return response()->json([
+            "message" => "Product deleted successfully",
+        ]);
     }
 
     public function show($id)

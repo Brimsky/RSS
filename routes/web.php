@@ -73,14 +73,6 @@ Route::middleware(["auth"])->group(function () {
         "registerClick",
     ])->name("products.registerClick");
 
-    // In your web.php, add with your other product routes
-    // Route::post("/products/{id}/save", [
-    //     ProductController::class,
-    //     "registerSave",
-    // ])
-    //     ->name("products.save")
-    //     ->middleware("auth");
-
     Route::get("/cart", [CartController::class, "index"])->name("cart");
     Route::post("/cart/add", [CartController::class, "add"])->name("cart.add");
     Route::post("/cart/update", [CartController::class, "update"])->name(
@@ -105,12 +97,6 @@ Route::middleware(["auth"])->group(function () {
     Route::get("/checkout/cancel", [CheckoutController::class, "cancel"])->name(
         "checkout.cancel"
     );
-
-    // Route to save/unsave a product
-    Route::post("/products/{id}/save", [
-        ProductController::class,
-        "registerSave",
-    ])->name("products.save");
 });
 //nekustinat no vietas
 //obligati but virs categroijam un subkategroijam
@@ -121,15 +107,46 @@ Route::get("/categories/{category}", [
     ProductController::class,
     "subcategories",
 ])->name("products.subcategories");
-
 Route::get("/products/{category}/{subcategory}", [
     ProductController::class,
     "listings",
 ])->name("products.listings");
-
 Route::get("/products/{id}", [ProductController::class, "show"])->name(
     "products.show"
 );
+Route::prefix("admin")->group(function () {
+    Route::get("/", [AdminController::class, "index"])->name("admin.index");
+
+    // User management routes
+    Route::put("/users/{user}", [AdminController::class, "updateUser"])->name(
+        "admin.users.update"
+    );
+    Route::delete("/users/{user}", [
+        AdminController::class,
+        "destroyUser",
+    ])->name("admin.users.destroy");
+    Route::put("/products/{product}", [
+        AdminController::class,
+        "updateProduct",
+    ])->name("admin.products.update");
+    Route::post("/products", [AdminController::class, "storeProduct"])->name(
+        "admin.products.store"
+    );
+    Route::delete("/products/{product}", [
+        AdminController::class,
+        "destroyProduct",
+    ])->name("admin.products.destroy");
+
+    // Product management routes
+    Route::resource("products", ProductController::class)->names([
+        "index" => "admin.products.index",
+        "create" => "admin.products.create",
+        "store" => "admin.products.store",
+        "edit" => "admin.products.edit",
+        "update" => "admin.products.update",
+        "destroy" => "admin.products.destroy",
+    ]);
+});
 
 Route::get("/chat/{seller?}", function ($seller = null) {
     return Inertia::render("Chat", ["seller" => $seller]);
