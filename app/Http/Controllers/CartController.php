@@ -5,24 +5,22 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Inertia\Inertia;
-
+use App\Models\Order;
+use App\Models\OrderItem;
 use Stripe\Stripe;
-use Stripe\PaymentIntent;
-use Illuminate\Http\JsonResponse;
-use Stripe\Exception\ApiErrorException;
-use Stripe\Checkout\Session;
-
+use Stripe\Checkout\Session as StripeSession;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    // Izvada grozu
+    // Display the cart
     public function index()
     {
         $cartItems = session()->get('cart', []);
-        return inertia('Cart', ['cartItems' => $cartItems]);
+        return Inertia::render('Cart', ['cartItems' => $cartItems]);
     }
 
-    // Pievienot produktu grozā
+    // Add a product to the cart
     public function add(Request $request)
     {
         $request->validate([
@@ -36,17 +34,15 @@ class CartController extends Controller
         if (!is_array($cart)) {
             $cart = [];
         }
-        // Pievieno daudzumu kad pievieno grozā, sākuma daudzums 1
+
+        // Add quantity if the product is already in the cart
         if (isset($cart[$productId])) {
-            if (!isset($cart[$productId]['quantity']) || !is_numeric($cart[$productId]['quantity'])) {
-                $cart[$productId]['quantity'] = 0;
-            }
             $cart[$productId]['quantity']++;
         } else {
             $cart[$productId] = [
                 "id"          => $product->id,
                 "name"        => $product->name,
-                "quantity"    => 1, 
+                "quantity"    => 1,
                 "price"       => $product->price,
                 "description" => $product->description,
             ];
@@ -57,7 +53,7 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Product added to cart!');
     }
 
-    // Daudzumu atjaunot
+    // Update product quantity in the cart
     public function update(Request $request)
     {
         $request->validate([
@@ -69,16 +65,15 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $quantity = (int) $request->input('quantity');
 
-        if (isset($cart[$productId]) && is_array($cart[$productId])) {
+        if (isset($cart[$productId])) {
             $cart[$productId]['quantity'] = $quantity;
             session()->put('cart', $cart);
         }
 
-        return redirect()->back(303)->with('success', 'Cart updated!');
+        return redirect()->back()->with('success', 'Cart updated!');
     }
 
-
-    // Noņemt produktu
+    // Remove product from the cart
     public function remove(Request $request)
     {
         $request->validate([
@@ -96,14 +91,20 @@ class CartController extends Controller
         return redirect()->route('cart')->with('success', 'Product removed from cart!');
     }
 
-    // Stripe
+    // Stripe Checkout process
     public function createCheckoutSession(Request $request)
     {
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-    
-        $cartItems = $request->input('items');
-    
+
+        // Retrieve the cart from the session
+        $cartItems = session('cart', []);
+        if (empty($cartItems)) {
+            return response()->json(['error' => 'Your cart is empty!'], 400);
+        }
+
+        // Prepare Stripe line items and calculate total price
         $lineItems = [];
+        $totalPrice = 0;
         foreach ($cartItems as $item) {
             $lineItems[] = [
                 'price_data' => [
@@ -111,20 +112,42 @@ class CartController extends Controller
                     'product_data' => [
                         'name' => $item['name'],
                     ],
-                    'unit_amount' => $item['price'] * 100, // Convert to cents
+                    'unit_amount' => $item['price'] * 100, // Convert price to cents
                 ],
                 'quantity' => $item['quantity'],
             ];
+            $totalPrice += $item['price'] * $item['quantity'];
         }
-    
-        $checkoutSession = Session::create([
-            'payment_method_types' => ['card'],
-            'line_items' => [$lineItems],
-            'mode' => 'payment',
-            'success_url' => url('/checkout/success'),
-            'cancel_url' => url('/checkout/cancel'),
+
+        // Create an order in the database
+        $order = Order::create([
+            'user_id' => Auth::id(),
+            'total_price' => $totalPrice,
         ]);
-    
-        return response()->json(['id' => $checkoutSession->id]);
+
+        // Create individual order items
+        foreach ($cartItems as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+            ]);
+        }
+
+        // Create the Stripe checkout session
+        try {
+            $checkoutSession = StripeSession::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $lineItems,
+                'mode' => 'payment',
+                'success_url' => url('/checkout/success'),
+                'cancel_url' => url('/checkout/cancel'),
+            ]);
+
+            return response()->json(['id' => $checkoutSession->id]);
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            return response()->json(['error' => 'Stripe error: ' . $e->getMessage()], 500);
+        }
     }
 }

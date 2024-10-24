@@ -12,7 +12,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserController;
+
 // Public routes
 Route::get("/", function () {
     $search = request("search");
@@ -132,5 +132,11 @@ Route::get("/products/{id}", [ProductController::class, "show"])->name(
             'destroy' => 'admin.products.destroy',
         ]);
     });
+
+    Route::get('/chat/{seller?}', function ($seller = null) {
+        return Inertia::render('Chat', ['seller' => $seller]);
+    })->name('chat');
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
 
 require __DIR__ . "/auth.php";
