@@ -80,15 +80,96 @@ class ProductController extends Controller
         ]);
     }
 
+    // In ProductController.php
     public function dashboard()
     {
-        $userId = auth()->id();
-        $products = Product::where("user_id", $userId)->get();
-        $totalClicks = Product::where("user_id", $userId)->sum("clicks");
+        $user = auth()->user();
+        $data = [
+            "user" => $user,
+            "savedProducts" => [],
+            "products" => [],
+            "totalClicks" => 0,
+            "productSaves" => [],
+        ];
 
-        return Inertia::render("Dashboard", [
-            "products" => $products,
-            "totalClicks" => $totalClicks,
+        if ($user->role === "seller") {
+            // Seller data
+            $data["products"] = Product::where("user_id", $user->id)->get();
+            $data["totalClicks"] = Product::where("user_id", $user->id)->sum(
+                "clicks"
+            );
+
+            // Get saves information for each product
+            $data["productSaves"] = Product::where("user_id", $user->id)
+                ->withCount("savedBy as saves_count")
+                ->with([
+                    "savedBy" => function ($query) {
+                        $query->select(
+                            "users.id",
+                            "users.name",
+                            "users.email",
+                            "saved_products.created_at"
+                        );
+                    },
+                ])
+                ->get()
+                ->map(function ($product) {
+                    return [
+                        "id" => $product->id,
+                        "name" => $product->name,
+                        "saves_count" => $product->saves_count,
+                        "savers" => $product->savedBy->map(function ($user) {
+                            return [
+                                "id" => $user->id,
+                                "name" => $user->name,
+                                "email" => $user->email,
+                                "saved_at" => $user->created_at->format(
+                                    "M d, Y H:i"
+                                ),
+                            ];
+                        }),
+                    ];
+                });
+        }
+
+        if ($user->role === "buyer") {
+            // Buyer data
+            $data["savedProducts"] = $user->saves()->latest()->get();
+        }
+
+        return Inertia::render("Dashboard", $data);
+    }
+
+    public function registerSave(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        if (!auth()->check()) {
+            return response()->json(
+                [
+                    "message" => "Please login to save products",
+                    "saved" => false,
+                ],
+                401
+            );
+        }
+
+        $saved = $product->savedBy()->toggle(auth()->id());
+
+        if (count($saved["attached"]) > 0) {
+            $product->increment("saves_count");
+            $message = "Product saved successfully";
+            $isSaved = true;
+        } else {
+            $product->decrement("saves_count");
+            $message = "Product unsaved successfully";
+            $isSaved = false;
+        }
+
+        return response()->json([
+            "message" => $message,
+            "saved" => $isSaved,
+            "saves_count" => $product->saves_count,
         ]);
     }
 

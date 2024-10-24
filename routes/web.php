@@ -69,6 +69,14 @@ Route::middleware(["auth"])->group(function () {
         "registerClick",
     ])->name("products.registerClick");
 
+    // In your web.php, add with your other product routes
+    // Route::post("/products/{id}/save", [
+    //     ProductController::class,
+    //     "registerSave",
+    // ])
+    //     ->name("products.save")
+    //     ->middleware("auth");
+
     Route::get("/cart", [CartController::class, "index"])->name("cart");
     Route::post("/cart/add", [CartController::class, "add"])->name("cart.add");
     Route::post("/cart/update", [CartController::class, "update"])->name(
@@ -93,6 +101,12 @@ Route::middleware(["auth"])->group(function () {
     Route::get("/checkout/cancel", [CheckoutController::class, "cancel"])->name(
         "checkout.cancel"
     );
+
+    // Route to save/unsave a product
+    Route::post("/products/{id}/save", [
+        ProductController::class,
+        "registerSave",
+    ])->name("products.save");
 });
 //nekustinat no vietas
 //obligati but virs categroijam un subkategroijam

@@ -1,3 +1,4 @@
+```vue
 <template>
     <AuthenticatedLayout>
         <div class="min-h-screen bg-gray-100 py-6">
@@ -16,86 +17,95 @@
                 </div>
 
                 <!-- Grid Product Layout -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                >
                     <div
                         v-for="product in products"
                         :key="product.id"
                         class="bg-white p-4 rounded-lg shadow-lg relative"
                     >
                         <!-- Product Image -->
-                        <img
-                            v-if="product.image"
-                            :src="product.image"
-                            alt="Product Image"
-                            class="w-full h-32 object-cover mb-4 rounded-md"
-                        />
-
-                        <!-- Product Name -->
-                        <h2 class="font-semibold text-lg mb-2">
-                            <Link
-                                :href="route('products.show', product.id)"
-                                class="text-blue-600 hover:underline"
-                                @click="registerClick(product.id)"
+                        <div class="relative">
+                            <img
+                                :src="getFirstPhoto(product.photos)"
+                                :alt="product.name"
+                                @error="handleImageError"
+                                class="w-full h-32 object-cover mb-4 rounded-md"
+                            />
+                            <!-- View Count Badge -->
+                            <div
+                                class="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs"
                             >
-                                {{ product.name }}
-                            </Link>
-                        </h2>
+                                {{ product.clicks || 0 }} views
+                            </div>
+                        </div>
 
-                        <!-- Product Price -->
-                        <p class="text-gray-600 mb-4">
-                            ${{ parseFloat(product.price).toFixed(2) }}
-                        </p>
-
-                        <!-- Product Description -->
-                        <p class="text-sm text-gray-500 mb-4">
-                            {{ product.description }}
-                        </p>
-
-                        <!-- Actions -->
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <!-- Add to Cart Button -->
-                                <button
-                                    @click="addToCart(product)"
-                                    class="btn btn-primary"
+                        <!-- Product Info -->
+                        <div class="space-y-2">
+                            <!-- Product Name -->
+                            <h2 class="font-semibold text-lg">
+                                <Link
+                                    :href="route('products.show', product.id)"
+                                    class="text-blue-600 hover:underline"
+                                    @click="registerClick(product.id)"
                                 >
-                                    Add to Cart
-                                </button>
+                                    {{ product.name }}
+                                </Link>
+                            </h2>
 
-                                <!-- Listing Saves Icon -->
-                                <button
-                                    @click="saveProduct(product)"
-                                    class="p-1 rounded hover:bg-gray-200 transition"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="h-6 w-6 text-gray-500"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                                        />
-                                    </svg>
-                                </button>
+                            <!-- Product Price -->
+                            <p class="text-gray-600 text-xl font-bold">
+                                ${{ formatPrice(product.price) }}
+                            </p>
+
+                            <!-- Category & Location -->
+                            <div
+                                class="flex items-center text-sm text-gray-500 space-x-2"
+                            >
+                                <span class="bg-gray-100 px-2 py-1 rounded">
+                                    {{ product.category }}
+                                </span>
+                                <span>·</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded">
+                                    {{ product.location }}
+                                </span>
                             </div>
 
-                            <!-- Edit/Delete Actions for Seller -->
-                            <template v-if="$page.props.auth.user.role === 'seller'">
+                            <!-- Product Condition -->
+                            <p class="text-sm text-gray-500">
+                                Condition: {{ product.condition }}
+                            </p>
+
+                            <!-- Product Description -->
+                            <p class="text-sm text-gray-500 line-clamp-2">
+                                {{ product.description }}
+                            </p>
+
+                            <!-- Posted Date -->
+                            <p class="text-xs text-gray-400">
+                                Posted {{ formatDate(product.created_at) }}
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4 space-y-2">
+                            <!-- Seller Actions -->
+                            <template
+                                v-if="$page.props.auth.user.role === 'seller'"
+                            >
                                 <div class="flex space-x-2">
                                     <Link
-                                        :href="route('products.edit', product.id)"
-                                        class="btn btn-warning"
+                                        :href="
+                                            route('products.edit', product.id)
+                                        "
+                                        class="btn btn-warning flex-1 text-center"
                                     >
                                         Edit
                                     </Link>
                                     <button
                                         @click="deleteProduct(product.id)"
-                                        class="btn btn-danger"
+                                        class="btn btn-danger flex-1"
                                     >
                                         Delete
                                     </button>
@@ -123,6 +133,32 @@ const props = defineProps({
 
 const toastMessage = ref(null);
 
+const formatPrice = (price) => {
+    const numPrice = Number(price);
+    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
+};
+
+const formatDate = (date) => {
+    return new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    }).format(new Date(date));
+};
+
+const getFirstPhoto = (photos) => {
+    try {
+        const parsedPhotos = JSON.parse(photos);
+        return parsedPhotos[0] || "https://via.placeholder.com/100";
+    } catch (e) {
+        return "https://via.placeholder.com/100";
+    }
+};
+
+const handleImageError = (event) => {
+    event.target.src = "https://via.placeholder.com/100";
+};
+
 const registerClick = async (productId) => {
     try {
         await axios.post(`/products/${productId}/register-click`);
@@ -134,12 +170,10 @@ const registerClick = async (productId) => {
 const saveProduct = async (product) => {
     try {
         await axios.post(`/products/${product.id}/save`);
-        toastMessage.value = "Product saved!";
-        setTimeout(() => {
-            toastMessage.value = null;
-        }, 3000);
+        showToast("Product saved!");
     } catch (error) {
         console.error("Error saving product:", error);
+        showToast("Error saving product", "error");
     }
 };
 
@@ -147,6 +181,8 @@ const deleteProduct = (id) => {
     if (confirm("Are you sure you want to delete this product?")) {
         router.delete(route("products.destroy", id), {
             preserveState: false,
+            onSuccess: () => showToast("Product deleted successfully"),
+            onError: () => showToast("Error deleting product", "error"),
         });
     }
 };
@@ -161,17 +197,20 @@ const addToCart = (product) => {
         {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: () => {
-                toastMessage.value = "Product added to cart!";
-                setTimeout(() => {
-                    toastMessage.value = null;
-                }, 3000);
-            },
+            onSuccess: () => showToast("Product added to cart!"),
             onError: (errors) => {
                 console.error("Error adding product to cart:", errors);
+                showToast("Error adding to cart", "error");
             },
         },
     );
+};
+
+const showToast = (message, type = "success") => {
+    toastMessage.value = { text: message, type };
+    setTimeout(() => {
+        toastMessage.value = null;
+    }, 3000);
 };
 </script>
 
@@ -181,13 +220,6 @@ const addToCart = (product) => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
-}
-
-/* Header styling */
-h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
 }
 
 /* Button styling */
@@ -231,52 +263,12 @@ h1 {
     background-color: #e53e3e;
 }
 
-/* Grid Styling */
-.grid {
-    display: grid;
-    gap: 1.5rem;
-}
-
-.grid-cols-1 {
-    grid-template-columns: 1fr;
-}
-
-.md\\:grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
-}
-
-.lg\\:grid-cols-4 {
-    grid-template-columns: repeat(4, 1fr);
-}
-
-/* Card styling */
-.bg-white {
-    background-color: white;
-}
-
-.p-4 {
-    padding: 1rem;
-}
-
-.rounded-lg {
-    border-radius: 0.5rem;
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Image styling */
-.img {
-    max-width: 100%;
-    height: auto;
-}
-
-.object-cover {
-    object-fit: cover;
-}
-
-.mb-4 {
-    margin-bottom: 1rem;
+/* Text truncation */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>
+```

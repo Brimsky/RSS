@@ -10,19 +10,19 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'user_id',
-        'category',
-        'subcategory',
-        'condition',
-        'location',
-        'photos'
+        "name",
+        "description",
+        "price",
+        "user_id",
+        "category",
+        "subcategory",
+        "condition",
+        "location",
+        "photos",
     ];
 
     protected $casts = [
-        'photos' => 'array',
+        "photos" => "array",
         // 'photos' => 'json',
     ];
     public function user()
@@ -32,6 +32,13 @@ class Product extends Model
 
     public function incrementClicks()
     {
-        $this->increment('clicks');
+        $this->increment("clicks");
+    }
+    public function savedBy()
+    {
+        return $this->belongsToMany(
+            User::class,
+            "saved_products"
+        )->withTimestamps();
     }
 }
