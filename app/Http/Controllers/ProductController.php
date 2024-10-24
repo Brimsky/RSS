@@ -6,7 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // Add this import
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -18,7 +18,9 @@ class ProductController extends Controller
         $subcategory = $request->input("subcategory");
 
         $products = Product::query()
-            ->where("user_id", $user->id) // Filter products by user_id
+            ->when(!$user->admin, function ($query) use ($user) {
+                return $query->where("user_id", $user->id);
+            })
             ->when($search, function ($query, $search) {
                 return $query
                     ->where("name", "like", "%$search%")
@@ -32,13 +34,15 @@ class ProductController extends Controller
             })
             ->get();
 
-        $categories = Product::where("user_id", $user->id)
-            ->distinct("category")
-            ->pluck("category");
-        $subcategories = Product::where("user_id", $user->id)
-            ->when($category, function ($query, $category) {
-                return $query->where("category", $category);
+        $categories = Product::distinct("category")
+            ->when(!$user->admin, function ($query) use ($user) {
+                return $query->where("user_id", $user->id);
             })
+            ->pluck("category");
+
+        $subcategories = Product::when($category, function ($query, $category) {
+            return $query->where("category", $category);
+        })
             ->distinct("subcategory")
             ->pluck("subcategory");
 
@@ -201,8 +205,6 @@ class ProductController extends Controller
             "user_id" => Auth::id(),
         ]);
 
-        // If you're handling photo uploads, process them here
-
         return redirect()
             ->route("products.index")
             ->with("success", "Product created successfully.");
@@ -216,7 +218,10 @@ class ProductController extends Controller
             "product_user_id" => $product->user_id,
         ]);
 
-        if ($product->user_id !== Auth::id()) {
+        if (
+            Auth::user()->role !== "admin" &&
+            $product->user_id !== Auth::id()
+        ) {
             Log::warning("Unauthorized edit attempt", [
                 "user_id" => Auth::id(),
                 "product_id" => $product->id,
@@ -243,7 +248,10 @@ class ProductController extends Controller
             "request_data" => $request->all(),
         ]);
 
-        if ($product->user_id !== Auth::id()) {
+        if (
+            Auth::user()->role !== "admin" &&
+            $product->user_id !== Auth::id()
+        ) {
             Log::warning("Unauthorized update attempt", [
                 "user_id" => Auth::id(),
                 "product_id" => $product->id,
@@ -265,7 +273,7 @@ class ProductController extends Controller
                 "subcategory" => "required|string",
                 "condition" => "required|string",
                 "location" => "required|string",
-                "photos" => "nullable", // Make it nullable and remove JSON validation
+                "photos" => "nullable",
             ]);
 
             Log::info("Validation passed", [
@@ -317,20 +325,24 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->user_id !== Auth::id()) {
-            return redirect()
-                ->route("products.index")
-                ->with(
-                    "error",
-                    "You do not have permission to delete this product."
-                );
+        if (
+            $product->user_id !== Auth::id() &&
+            Auth::user()->role !== "admin"
+        ) {
+            return response()->json(
+                [
+                    "error" =>
+                        "You do not have permission to delete this product.",
+                ],
+                422
+            );
         }
 
         $product->delete();
 
-        return redirect()
-            ->route("products.index")
-            ->with("success", "Product deleted successfully.");
+        // return response()->json([
+        //     'message' => 'Product deleted successfully'
+        // ]);
     }
 
     public function show($id)

@@ -2,7 +2,6 @@
     <div class="min-h-screen bg-gray-50">
         <div v-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Breadcrumb Navigation -->
-            <!-- Breadcrumb Navigation -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
                 <!-- Back Button -->
                 <Link
@@ -347,7 +346,6 @@
 </template>
 
 <script setup>
-// In your script setup section, update the imports and initialization:
 import { ref, computed } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import Toast from "@/Components/Toast.vue";
@@ -436,6 +434,10 @@ const addToCart = (product) => {
             },
         },
     );
+};
+
+const contactSeller = (sellerId) => {
+    router.get(route("chat", { seller: sellerId }));
 };
 
 const formatPrice = (price) => {

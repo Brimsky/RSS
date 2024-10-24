@@ -353,9 +353,7 @@
                                                     <p
                                                         class="text-sm text-gray-500"
                                                     >
-                                                        {{
-                                                            product.clicks
-                                                        }}
+                                                        {{ product.clicks }}
                                                         views
                                                     </p>
                                                 </div>
@@ -523,12 +521,6 @@ const topPerformingProducts = computed(() => {
 
 // Methods
 const formatPrice = (price) => Number(price).toFixed(2);
-const formatDate = (date) =>
-    new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    }).format(new Date(date));
 const getFirstPhoto = (photos) => {
     try {
         const parsedPhotos = JSON.parse(photos);

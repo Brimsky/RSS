@@ -14,6 +14,11 @@ class User extends Authenticatable implements HasMedia
     protected $fillable = ["name", "email", "password", "role"];
     protected $hidden = ["password", "remember_token"];
 
+    public function isAdmin()
+    {
+        return $this->role === "admin";
+    }
+
     protected function casts(): array
     {
         return [

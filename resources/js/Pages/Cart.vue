@@ -140,6 +140,7 @@ const redirectToStripeCheckout = async () => {
   }
 };
 
+
 const redirectToDelivery = () => {
   router.get(route('delivery.index'));
 };

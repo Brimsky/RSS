@@ -1,18 +1,18 @@
 services:
     phpmyadmin:
-            image: phpmyadmin/phpmyadmin
-            links:
-                - 'mysql:mysql'
-            ports:
-                - '8080:80'
-            environment:
-                MYSQL_USERNAME: '${DB_USERNAME}'
-                MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-                PMA_HOST: mysql
-            networks:
-                - sail
-            depends_on:
-                - mysql
+        image: phpmyadmin/phpmyadmin
+        links:
+            - 'mysql:mysql'
+        ports:
+            - '8080:80'
+        environment:
+            MYSQL_USERNAME: '${DB_USERNAME}'
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            PMA_HOST: mysql
+        networks:
+            - sail
+        depends_on:
+            - mysql
     laravel.test:
         build:
             context: ./vendor/laravel/sail/runtimes/8.3

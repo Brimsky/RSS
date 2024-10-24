@@ -1,4 +1,3 @@
-```vue
 <template>
     <AuthenticatedLayout>
         <div class="min-h-screen bg-gray-100 py-6">
@@ -6,7 +5,13 @@
                 <!-- Header Section -->
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="text-3xl font-bold">Product List</h1>
-                    <template v-if="$page.props.auth.user.role === 'seller'">
+                    <!-- Show "Add New Product" button for seller and admin roles -->
+                    <template
+                        v-if="
+                            $page.props.auth.user.role === 'seller' ||
+                            $page.props.auth.user.role === 'admin'
+                        "
+                    >
                         <Link
                             :href="route('products.create')"
                             class="btn btn-primary"
@@ -63,13 +68,13 @@
                             <div
                                 class="flex items-center text-sm text-gray-500 space-x-2"
                             >
-                                <span class="bg-gray-100 px-2 py-1 rounded">
-                                    {{ product.category }}
-                                </span>
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{
+                                    product.category
+                                }}</span>
                                 <span>·</span>
-                                <span class="bg-gray-100 px-2 py-1 rounded">
-                                    {{ product.location }}
-                                </span>
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{
+                                    product.location
+                                }}</span>
                             </div>
 
                             <!-- Product Condition -->
@@ -90,9 +95,12 @@
 
                         <!-- Actions -->
                         <div class="mt-4 space-y-2">
-                            <!-- Seller Actions -->
+                            <!-- Seller/Admin Actions -->
                             <template
-                                v-if="$page.props.auth.user.role === 'seller'"
+                                v-if="
+                                    $page.props.auth.user.role === 'seller' ||
+                                    $page.props.auth.user.role === 'admin'
+                                "
                             >
                                 <div class="flex space-x-2">
                                     <Link
@@ -100,9 +108,8 @@
                                             route('products.edit', product.id)
                                         "
                                         class="btn btn-warning flex-1 text-center"
+                                        >Edit</Link
                                     >
-                                        Edit
-                                    </Link>
                                     <button
                                         @click="deleteProduct(product.id)"
                                         class="btn btn-danger flex-1"
@@ -167,16 +174,6 @@ const registerClick = async (productId) => {
     }
 };
 
-const saveProduct = async (product) => {
-    try {
-        await axios.post(`/products/${product.id}/save`);
-        showToast("Product saved!");
-    } catch (error) {
-        console.error("Error saving product:", error);
-        showToast("Error saving product", "error");
-    }
-};
-
 const deleteProduct = (id) => {
     if (confirm("Are you sure you want to delete this product?")) {
         router.delete(route("products.destroy", id), {
@@ -185,25 +182,6 @@ const deleteProduct = (id) => {
             onError: () => showToast("Error deleting product", "error"),
         });
     }
-};
-
-const addToCart = (product) => {
-    router.post(
-        route("cart.add"),
-        {
-            product_id: product.id,
-            quantity: 1,
-        },
-        {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => showToast("Product added to cart!"),
-            onError: (errors) => {
-                console.error("Error adding product to cart:", errors);
-                showToast("Error adding to cart", "error");
-            },
-        },
-    );
 };
 
 const showToast = (message, type = "success") => {
@@ -271,4 +249,3 @@ const showToast = (message, type = "success") => {
     overflow: hidden;
 }
 </style>
-```
