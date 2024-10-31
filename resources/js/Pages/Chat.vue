@@ -198,31 +198,8 @@ const onScroll = async () => {
     // Load older messages when user scrolls to the top
     await loadMessages(selectedUser.value.id, true);
   }
-};
-
-// Scroll to the bottom of the chat window after sending a message
-const scrollToBottom = () => {
-  const container = messagesContainer.value;
-  if (container) {
-    container.scrollTop = container.scrollHeight;
   }
 };
-
-onMounted(async () => {
-  try {
-    const authResponse = await fetch('/api/current-user');
-    currentUser.value = await authResponse.json();
-    await loadUsers();
-  } catch (error) {
-    console.error('Ошибка при загрузке данных:', error);
-  }
-});
-
-onUnmounted(() => {
-  if (messageUpdateInterval) {
-    clearInterval(messageUpdateInterval);
-  }
-});
 </script>
 
 <style scoped>
