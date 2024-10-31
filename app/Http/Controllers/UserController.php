@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        $users = User::where('id', '!=', auth()->id())->get();
+        return response()->json($users);
+    }
+
     public function destroy(User $user)
     {
         if ($user->role === 'admin') {
@@ -24,32 +30,17 @@ class UserController extends Controller
         ]);
     }
     public function update(User $user) 
-{
-    // Validate the request data
-    $validated = request()->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:users,email,' . $user->id,
-        // Add other validation rules as needed
-    ]);
-    
-    $user->update($validated);
-    
-    return redirect()->back()->with('success', 'User updated successfully');
-}
-}
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use App\Models\User;
-
-class UserController extends Controller
-{
-    public function index()
     {
-        $users = User::where('id', '!=', auth()->id())->get();
-        return response()->json($users);
+        // Validate the request data
+        $validated = request()->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            // Add other validation rules as needed
+        ]);
+        
+        $user->update($validated);
+        
+        return redirect()->back()->with('success', 'User updated successfully');
     }
 }
 

@@ -7,11 +7,11 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DeliveryController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ChatController;
 
 // Public routes
 Route::get("/", function () {
@@ -151,10 +151,18 @@ Route::prefix("admin")->group(function () {
     ]);
 });
 
-Route::get("/chat/{seller?}", function ($seller = null) {
-    return Inertia::render("Chat", ["seller" => $seller]);
-})->name("chat");
-Route::get("/messages", [MessageController::class, "index"]);
-Route::post("/messages", [MessageController::class, "store"]);
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+    Route::get('/chat/users', [ChatController::class, 'getAllUsers'])->name('chat.users');
+    Route::get('/chat/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::get('/chat/user/{id}', [ChatController::class, 'getMessagesForUser'])->name('chat.user.messages');
+});
+
+Route::get('/test-broadcast', function () {
+    broadcast(new \App\Events\MessageSent('Test message!'));
+    return 'Broadcast sent!';
+});
+
 
 require __DIR__ . "/auth.php";

@@ -54,9 +54,11 @@
                                 </span>
                             </NavLink>
                             <NavLink
-                                :href="route('chat')"
-                                :active="route().current('chat')"
-                                >Chat</NavLink
+                                :href="route('chat.index')"
+                                :active="route().current('chat.index')"
+                                >
+                                Chat
+                                </NavLink
                             >
                         </div>
                     </div>

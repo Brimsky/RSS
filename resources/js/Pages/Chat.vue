@@ -30,7 +30,6 @@
 
           <div 
             class="messages-container flex-1 overflow-y-auto py-4 space-y-4" 
-            @scroll="onScroll"
             ref="messagesContainer"
           >
             <div 
@@ -74,131 +73,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { ref, reactive, onMounted, nextTick, computed } from 'vue';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import axios from 'axios';
 
-const { props } = usePage();
-const sellerId = props.seller;
-const users = ref([]);
-const selectedUser = ref(null);
 const messages = ref([]);
 const newMessage = ref('');
-const currentUser = ref(null);
+const selectedUser = ref(null);
 const searchQuery = ref('');
-let messageUpdateInterval = null;
-let isLoadingOldMessages = ref(false);
-const lastMessageId = ref(null); // Track the ID of the last loaded message for pagination
-const messagesContainer = ref(null); // Ref for the messages container
+const users = ref([]);
+const currentUser = reactive({ id: 1, name: 'Current User' });
+
+// Initialize Echo with Pusher and Vite environment variables
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true
+});
+
+onMounted(() => {
+    axios.get('/chat/users').then(response => {
+      users.value = response.data;
+    });
+
+    axios.get('/chat/messages').then(response => {
+      messages.value = response.data;
+    });
+
+    // Listen for MessageSent event on the 'chat' channel
+    window.Echo.channel('chat')
+        .listen('MessageSent', (event) => {
+            messages.value.push(event.message);
+            scrollToBottom();
+        });
+});
+
+const sendMessage = () => {
+    if (newMessage.value.trim() === '') return;
+
+    axios.post('/chat', {
+      message: newMessage.value
+    }, {
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    }).then(() => {
+        newMessage.value = '';
+    }).catch(error => {
+        console.error(error);
+    });
+};
+
+const selectUser = (user) => {
+  selectedUser.value = user;
+  loadMessages();
+};
+
+const loadMessages = () => {
+  if (selectedUser.value) {
+    axios.get(`/chat/user/${selectedUser.value.id}`).then(response => {
+      messages.value = response.data;
+      scrollToBottom();
+    }).catch(error => {
+      console.error(error);
+    });
+  }
+};
 
 const filteredUsers = computed(() => {
   return users.value.filter(user => 
-    user.id !== currentUser.value.id
+    user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
-// Load users from the backend
-const loadUsers = async () => {
-  try {
-    const response = await fetch('/api/users');
-    users.value = await response.json();
-  } catch (error) {
-    console.error('Ошибка при загрузке пользователей:', error);
-  }
-};
-
-// Load messages with optional pagination for older messages
-const loadMessages = async (userId, loadOlder = false) => {
-  try {
-    if (isLoadingOldMessages.value) return; // Prevent duplicate loads during scrolling
-
-    isLoadingOldMessages.value = true;
-
-    // Build the URL with optional `before_message_id` for loading older messages
-    let url = `/api/messages?receiver_id=${userId}`;
-    if (loadOlder && lastMessageId.value) {
-      url += `&before_message_id=${lastMessageId.value}`;
-    }
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error('Ошибка при загрузке сообщений');
-    }
-
-    const data = await response.json();
-
-    if (data.length) {
-      if (loadOlder) {
-        // Prepend older messages to the existing list
-        messages.value = [...data, ...messages.value];
-      } else {
-        // First time load
-        messages.value = data;
-      }
-
-      // Update the lastMessageId to the oldest message's ID
-      lastMessageId.value = data[0]?.id;
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки сообщений:', error);
-  } finally {
-    isLoadingOldMessages.value = false;
-  }
-};
-
-// Triggered when a user is selected from the user list
-const selectUser = async (user) => {
-  selectedUser.value = user;
-  messages.value = []; // Clear previous messages
-  lastMessageId.value = null; // Reset message pagination
-  await loadMessages(user.id); // Load initial messages
-};
-
-// Send a new message to the backend and update the chat window
-const sendMessage = async () => {
-  if (!newMessage.value.trim() || !selectedUser.value) {
-    return; // Prevent sending empty messages
-  }
-
-  const messageData = {
-    receiver_id: selectedUser.value.id,
-    message: newMessage.value.trim(),
-  };
-
-  try {
-    const response = await fetch('/api/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      },
-      body: JSON.stringify(messageData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Ошибка отправки сообщения');
-    }
-
-    const message = await response.json();
-    messages.value.push(message);
-    newMessage.value = '';
-
-    await nextTick(); // Wait for DOM updates
-    scrollToBottom(); // Scroll to the bottom of the chat window
-  } catch (error) {
-    console.error('Ошибка отправки сообщения:', error);
-  }
-};
-
-// Scroll event listener for detecting when the user reaches the top
-const onScroll = async () => {
-  const container = messagesContainer.value;
-  if (container.scrollTop === 0 && !isLoadingOldMessages.value) {
-    // Load older messages when user scrolls to the top
-    await loadMessages(selectedUser.value.id, true);
-  }
-  }
+const scrollToBottom = () => {
+  nextTick(() => {
+    const container = document.querySelector('.messages-container');
+    if (container) container.scrollTop = container.scrollHeight;
+  });
 };
 </script>
 
@@ -221,4 +178,3 @@ const onScroll = async () => {
   overflow-y: auto;
 }
 </style>
-
