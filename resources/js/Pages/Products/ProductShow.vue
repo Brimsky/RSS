@@ -1,5 +1,90 @@
 <template>
     <div class="min-h-screen bg-gray-50">
+        <!-- Navbar -->
+        <nav class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo -->
+                    <a href="/" class="group">
+                        <h1
+                            class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent group-hover:from-purple-500 group-hover:to-blue-400 transition-all duration-300"
+                        >
+                            RSS
+                        </h1>
+                    </a>
+
+                    <!-- Mobile Menu Button -->
+                    <div class="flex items-center md:hidden">
+                        <button
+                            @click="isMobileMenuOpen = !isMobileMenuOpen"
+                            class="text-gray-600 hover:text-purple-600 focus:outline-none"
+                        >
+                            <svg
+                                v-if="!isMobileMenuOpen"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            </svg>
+                            <svg
+                                v-else
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- User Actions -->
+                    <div class="flex items-center space-x-4">
+                        <a
+                            href="/cart"
+                            class="text-gray-600 hover:text-purple-600 transition-colors duration-300"
+                        >
+                            <div class="relative">
+                                <svg
+                                    class="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                </svg>
+                                <span
+                                    v-if="cartCount > 0"
+                                    class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                                >
+                                    {{ cartCount }}
+                                </span>
+                            </div>
+                        </a>
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </nav>
+
         <div v-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Breadcrumb Navigation -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
