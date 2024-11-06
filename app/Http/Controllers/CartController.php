@@ -91,41 +91,38 @@ class CartController extends Controller
         return redirect()->route('cart')->with('success', 'Product removed from cart!');
     }
 
-    // Stripe Checkout process
-
+    // Stripe
 
     public function createCheckoutSession(Request $request)
     {
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
     
-        // Retrieve cart items and delivery cost from the request
         $cartItems = $request->input('items', []);
-        $deliveryCost = $request->input('deliveryCost', 0); // Default to 0 if not provided
+        $deliveryCost = $request->input('deliveryCost', 0); 
     
         // Calculate total price (items + delivery)
         $totalPrice = array_reduce($cartItems, function ($sum, $item) {
             return $sum + ($item['price'] * $item['quantity']);
         }, 0) + $deliveryCost;
     
-        // Save order to the database
+        
         $order = Order::create([
             'user_id' => auth()->id(),
             'total_price' => $totalPrice,
-            'status' => 'pending', // or any default status you prefer
+            'status' => 'pending', 
             'payment_method' => 'stripe',
             'order_date' => now(),
         ]);
     
-        // Save order items to the database
+        
         foreach ($cartItems as $item) {
             $order->items()->create([
-                'product_id' => $item['id'], // assuming 'id' is the product identifier
+                'product_id' => $item['id'], 
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
             ]);
         }
     
-        // Prepare Stripe line items
         $lineItems = [];
         foreach ($cartItems as $item) {
             $lineItems[] = [
@@ -134,13 +131,12 @@ class CartController extends Controller
                     'product_data' => [
                         'name' => $item['name'],
                     ],
-                    'unit_amount' => $item['price'] * 100, // Convert price to cents
+                    'unit_amount' => $item['price'] * 100, 
                 ],
                 'quantity' => $item['quantity'],
             ];
         }
     
-        // Add delivery cost as a separate line item in Stripe
         if ($deliveryCost > 0) {
             $lineItems[] = [
                 'price_data' => [
@@ -148,7 +144,7 @@ class CartController extends Controller
                     'product_data' => [
                         'name' => 'Delivery Cost',
                     ],
-                    'unit_amount' => $deliveryCost * 100, // Convert to cents
+                    'unit_amount' => $deliveryCost * 100,
                 ],
                 'quantity' => 1,
             ];

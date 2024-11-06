@@ -134,7 +134,6 @@ const removeItem = async (productId) => {
   }
 };
 
-// Calculate delivery cost based on city
 const calculateDeliveryCost = () => {
   const cityDistances = {
     'riga': 0,
@@ -142,13 +141,12 @@ const calculateDeliveryCost = () => {
     'liepaja': 200,
     'ventspils': 150,
     'daugavpils': 230,
-    // add more cities with approximate distances in km
   };
   
   const normalizedCity = city.value.toLowerCase();
-  const distance = cityDistances[normalizedCity] || 100; // Default distance if city not found
+  const distance = cityDistances[normalizedCity] || 100; 
   
-  deliveryCost.value = distance < 50 ? 5 : (5 + distance * 0.1); // Basic calculation formula
+  deliveryCost.value = distance < 50 ? 5 : (5 + distance * 0.1); 
 };
 
 let stripe;
@@ -167,8 +165,8 @@ const redirectToStripeCheckout = async () => {
       },
       body: JSON.stringify({
         items: props.cartItems,
-        deliveryCost: parseFloat(deliveryCost.value), // Send delivery cost separately
-        totalAmount: totalPrice() // Send the total including delivery cost
+        deliveryCost: parseFloat(deliveryCost.value), 
+        totalAmount: totalPrice() 
       }),
     });
     const session = await response.json();
