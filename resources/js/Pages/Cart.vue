@@ -49,34 +49,44 @@
         <div class="md:w-1/3">
           <div class="bg-white shadow-lg p-6 rounded-lg">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Order Summary</h2>
+            
+            <!-- City input and delivery cost calculation -->
+            <div class="mb-4">
+              <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+              <input 
+                id="city"
+                v-model="city"
+                type="text" 
+                class="border rounded p-2 w-full"
+                placeholder="Enter your city"
+                @input="calculateDeliveryCost"
+              />
+              <p v-if="deliveryCost !== null" class="text-sm text-gray-600 mt-1">
+                Estimated Delivery Cost: ${{ deliveryCost.toFixed(2) }}
+              </p>
+            </div>
+
             <div class="space-y-3">
               <p class="flex justify-between text-gray-600">
                 <span>Shipping cost</span>
-                <span>Calculating...</span>
-              </p>
-              <p class="flex justify-between text-gray-600">
-                <span>Discount</span>
-                <span>None</span>
-              </p>
-              <p class="flex justify-between text-gray-600">
-                <span>VAT (21%)</span>
-                <span>Calculated at checkout</span>
+                <span v-if="deliveryCost !== null">${{ deliveryCost.toFixed(2) }}</span>
+                <span v-else>Calculating...</span>
               </p>
               <p class="flex justify-between text-lg font-semibold text-gray-800">
                 <span>Total</span>
                 <span>${{ totalPrice().toFixed(2) }}</span>
               </p>
+
+
+
             </div>
+
             <p class="text-sm text-gray-500 mt-3">
               Final VAT may vary based on your location.
             </p>
             <p class="text-sm text-blue-600 mt-2">
               For VAT exemptions, contact administration.
             </p>
-            <button @click="redirectToDelivery"
-              class="w-full mt-4 bg-gradient-to-r from-green-400 to-blue-500 text-white font-semibold py-2 rounded-lg shadow-md hover:from-green-500 hover:to-blue-600 transition">
-              Delivery Information
-            </button>
             <button @click="redirectToStripeCheckout"
               class="w-full mt-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 rounded-lg shadow-md hover:from-blue-600 hover:to-purple-600 transition">
               Pay with Stripe
@@ -89,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { router } from '@inertiajs/vue3';
@@ -99,11 +109,20 @@ const props = defineProps({
   cartItems: Object,
 });
 
-const totalPrice = () => 
-  Object.values(props.cartItems).reduce(
-    (sum, item) => sum + parseFloat(item.price) * item.quantity, 
+
+
+const city = ref('');
+const deliveryCost = ref(null);
+
+const totalPrice = () => {
+  const itemsTotal = Object.values(props.cartItems).reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+  return itemsTotal + (deliveryCost.value ? parseFloat(deliveryCost.value) : 0);
+};
+
+
 
 const updateQuantity = async (productId, quantity) => {
   await router.post(route('cart.update'), { product_id: productId, quantity });
@@ -115,12 +134,30 @@ const removeItem = async (productId) => {
   }
 };
 
+// Calculate delivery cost based on city
+const calculateDeliveryCost = () => {
+  const cityDistances = {
+    'riga': 0,
+    'jurmala': 30,
+    'liepaja': 200,
+    'ventspils': 150,
+    'daugavpils': 230,
+    // add more cities with approximate distances in km
+  };
+  
+  const normalizedCity = city.value.toLowerCase();
+  const distance = cityDistances[normalizedCity] || 100; // Default distance if city not found
+  
+  deliveryCost.value = distance < 50 ? 5 : (5 + distance * 0.1); // Basic calculation formula
+};
+
 let stripe;
 onMounted(async () => {
   stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 });
 
 const redirectToStripeCheckout = async () => {
+  
   try {
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
@@ -128,7 +165,11 @@ const redirectToStripeCheckout = async () => {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
       },
-      body: JSON.stringify({ items: props.cartItems }),
+      body: JSON.stringify({
+        items: props.cartItems,
+        deliveryCost: parseFloat(deliveryCost.value), // Send delivery cost separately
+        totalAmount: totalPrice() // Send the total including delivery cost
+      }),
     });
     const session = await response.json();
     const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
@@ -141,9 +182,7 @@ const redirectToStripeCheckout = async () => {
 };
 
 
-const redirectToDelivery = () => {
-  router.get(route('delivery.index'));
-};
+
 </script>
 
 <style scoped>

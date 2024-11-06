@@ -92,19 +92,41 @@ class CartController extends Controller
     }
 
     // Stripe Checkout process
+
+
     public function createCheckoutSession(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-
-        // Retrieve the cart from the session
-        $cartItems = session('cart', []);
-        if (empty($cartItems)) {
-            return response()->json(['error' => 'Your cart is empty!'], 400);
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+    
+        // Retrieve cart items and delivery cost from the request
+        $cartItems = $request->input('items', []);
+        $deliveryCost = $request->input('deliveryCost', 0); // Default to 0 if not provided
+    
+        // Calculate total price (items + delivery)
+        $totalPrice = array_reduce($cartItems, function ($sum, $item) {
+            return $sum + ($item['price'] * $item['quantity']);
+        }, 0) + $deliveryCost;
+    
+        // Save order to the database
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'total_price' => $totalPrice,
+            'status' => 'pending', // or any default status you prefer
+            'payment_method' => 'stripe',
+            'order_date' => now(),
+        ]);
+    
+        // Save order items to the database
+        foreach ($cartItems as $item) {
+            $order->items()->create([
+                'product_id' => $item['id'], // assuming 'id' is the product identifier
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+            ]);
         }
-
-        // Prepare Stripe line items and calculate total price
+    
+        // Prepare Stripe line items
         $lineItems = [];
-        $totalPrice = 0;
         foreach ($cartItems as $item) {
             $lineItems[] = [
                 'price_data' => [
@@ -116,35 +138,31 @@ class CartController extends Controller
                 ],
                 'quantity' => $item['quantity'],
             ];
-            $totalPrice += $item['price'] * $item['quantity'];
         }
-
-        // Create an order in the database
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'total_price' => $totalPrice,
-        ]);
-
-        // Create individual order items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-            ]);
+    
+        // Add delivery cost as a separate line item in Stripe
+        if ($deliveryCost > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'usd',
+                    'product_data' => [
+                        'name' => 'Delivery Cost',
+                    ],
+                    'unit_amount' => $deliveryCost * 100, // Convert to cents
+                ],
+                'quantity' => 1,
+            ];
         }
-
-        // Create the Stripe checkout session
+    
         try {
-            $checkoutSession = StripeSession::create([
+            $checkoutSession = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
                 'mode' => 'payment',
                 'success_url' => url('/checkout/success'),
                 'cancel_url' => url('/checkout/cancel'),
             ]);
-
+    
             return response()->json(['id' => $checkoutSession->id]);
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json(['error' => 'Stripe error: ' . $e->getMessage()], 500);
