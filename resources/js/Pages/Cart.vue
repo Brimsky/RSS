@@ -1,72 +1,62 @@
 <template>
-  <Head title="My Cart" />
   <AuthenticatedLayout>
-    <div class="container mx-auto p-6">
-      <h1 class="text-3xl font-bold mb-6 flex items-center">
-        <span class="inline-block mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-        </span>
-        My Cart
-      </h1>
-
-      <div class="flex flex-col md:flex-row gap-6">
+    <div class="container mx-auto py-8 px-4 md:px-6">
+      <div class="flex flex-col md:flex-row gap-8">
         <!-- Cart Items -->
-        <div class="md:w-2/3 space-y-4">
-          <div
-            v-for="(item, productId) in cartItems"
-            :key="productId"
-            class="flex items-center bg-white shadow-md p-4 rounded-lg"
-          >
-            <div class="flex-grow">
-              <h2 class="font-semibold text-lg text-gray-800">{{ item.name }}</h2>
-              <p class="text-sm text-gray-600">{{ item.description }}</p>
-              <p class="text-green-600">In Stock</p>
-              <div class="mt-2">
-                <a href="#" @click.prevent="removeItem(productId)" class="text-red-600 hover:text-red-800 transition">
-                  Remove
-                </a>
+        <div class="md:w-2/3 space-y-6">
+          <div v-for="(item, productId) in cartItems" :key="productId" class="bg-white shadow-lg rounded-lg p-6">
+            <div class="flex items-center">
+              <div class="flex-grow">
+                <h2 class="text-xl font-semibold text-gray-800">{{ item.name }}</h2>
+                <p class="text-gray-600 mt-1">{{ item.description }}</p>
+                <p class="text-green-500 font-medium mt-2">Available</p>
+                <div class="mt-4">
+                  <a href="#" @click.prevent="removeItem(productId)" class="text-red-500 hover:text-red-700 transition">Remove</a>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-lg font-semibold text-gray-800">${{ parseFloat(item.price).toFixed(2) }}</p>
+                <input type="number" min="1" v-model.number="item.quantity" @change="updateQuantity(productId, item.quantity)" class="mt-3 border rounded p-2 w-20 text-center text-gray-600" />
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-lg font-semibold text-gray-800">${{ parseFloat(item.price).toFixed(2) }}</p>
-              <input
-                type="number"
-                min="1"
-                v-model.number="item.quantity"
-                @change="updateQuantity(productId, item.quantity)"
-                class="mt-2 border rounded p-1 w-16 text-center text-gray-600"
-              />
-            </div>
           </div>
-          <p class="mt-4 font-semibold text-gray-700">{{ Object.keys(cartItems).length }} Items</p>
+          <p class="font-semibold text-gray-700">{{ Object.keys(cartItems).length }} Items</p>
         </div>
 
         <!-- Summary Section -->
         <div class="md:w-1/3">
-          <div class="bg-white shadow-lg p-6 rounded-lg">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Order Summary</h2>
+          <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
+            
+            <!-- Form Fields -->
+            <div class="mb-6">
+              <label for="service-type" class="block text-gray-700 font-medium text-sm mb-1">Service Type</label>
+              <input id="service-type" type="text" class="border rounded-lg p-3 w-full" placeholder="Enter your Service type" />
+            </div>
+            <div class="mb-6">
+              <label for="name" class="block text-gray-700 font-medium text-sm mb-1">Name</label>
+              <input id="name" type="text" class="border rounded-lg p-3 w-full" placeholder="Enter your name" />
+            </div>
+            <div class="mb-6">
+              <label for="address" class="block text-gray-700 font-medium text-sm mb-1">Address</label>
+              <input id="address" type="text" class="border rounded-lg p-3 w-full" placeholder="Enter your Address" />
+            </div>
+            <div class="mb-6">
+              <label for="phone" class="block text-gray-700 font-medium text-sm mb-1">Phone</label>
+              <input id="phone" type="text" class="border rounded-lg p-3 w-full" placeholder="Enter your Phone number" />
+            </div>
+            <div class="mb-6">
+              <label for="email" class="block text-gray-700 font-medium text-sm mb-1">Email</label>
+              <input id="email" type="email" class="border rounded-lg p-3 w-full" placeholder="Enter your Email address" />
+            </div>
             
             <!-- City input and delivery cost calculation -->
-            <div class="mb-4">
-              <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-              <input 
-                id="city"
-                v-model="city"
-                type="text" 
-                class="border rounded p-2 w-full"
-                placeholder="Enter your city"
-                @input="calculateDeliveryCost"
-              />
-              <p v-if="deliveryCost !== null" class="text-sm text-gray-600 mt-1">
-                Estimated Delivery Cost: ${{ deliveryCost.toFixed(2) }}
-              </p>
+            <div class="mb-6">
+              <label for="city" class="block text-gray-700 font-medium text-sm mb-1">City</label>
+              <input id="city" v-model="city" type="text" class="border rounded-lg p-3 w-full" placeholder="Enter your city" @input="calculateDeliveryCost" />
             </div>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
               <p class="flex justify-between text-gray-600">
                 <span>Shipping cost</span>
                 <span v-if="deliveryCost !== null">${{ deliveryCost.toFixed(2) }}</span>
@@ -76,19 +66,13 @@
                 <span>Total</span>
                 <span>${{ totalPrice().toFixed(2) }}</span>
               </p>
-
-
-
             </div>
 
-            <p class="text-sm text-gray-500 mt-3">
-              Final VAT may vary based on your location.
-            </p>
-            <p class="text-sm text-blue-600 mt-2">
-              For VAT exemptions, contact administration.
-            </p>
-            <button @click="redirectToStripeCheckout"
-              class="w-full mt-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 rounded-lg shadow-md hover:from-blue-600 hover:to-purple-600 transition">
+            <p class="text-blue-500 text-sm mt-2">For VAT exemptions, contact administration.</p>
+            <button 
+              :disabled="!city || !city.trim() || Object.keys(cartItems).length === 0" 
+              @click="redirectToStripeCheckout" 
+              class="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 rounded-lg shadow-md hover:from-blue-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
               Pay with Stripe
             </button>
           </div>
@@ -100,19 +84,21 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { router } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
   cartItems: Object,
 });
 
-
-
 const city = ref('');
 const deliveryCost = ref(null);
+const serviceType = ref('');
+const name = ref('');
+const address = ref('');
+const phone = ref('');
+const email = ref('');
 
 const totalPrice = () => {
   const itemsTotal = Object.values(props.cartItems).reduce(
@@ -121,8 +107,6 @@ const totalPrice = () => {
   );
   return itemsTotal + (deliveryCost.value ? parseFloat(deliveryCost.value) : 0);
 };
-
-
 
 const updateQuantity = async (productId, quantity) => {
   await router.post(route('cart.update'), { product_id: productId, quantity });
@@ -138,10 +122,48 @@ const calculateDeliveryCost = () => {
   const cityDistances = {
     'riga': 0,
     'jurmala': 30,
-    'liepaja': 200,
+    'liepāja': 200,
     'ventspils': 150,
     'daugavpils': 230,
-  };
+    'jelgava': 50,
+    'valmiera': 110,
+    'cēsis': 90,
+    'jēkabpils': 140,
+    'rēzekne': 240,
+    'ogre': 35,
+    'saldus': 115,
+    'kuldīga': 155,
+    'madona': 165,
+    'gulbene': 180,
+    'talsi': 100,
+    'alūksne': 200,
+    'limbaži': 80,
+    'preiļi': 210,
+    'bauska': 65,
+    'dobele': 75,
+    'smiltene': 130,
+    'viļņa': 300,
+    'kauņa': 270,
+    'tallina': 310,
+    'helsinki': 400,
+    'stokholma': 500,
+    'varšava': 650,
+    'berlīne': 1000,
+    'kopenhāgena': 1100,
+    'oslo': 1200,
+    'amsterdama': 1500,
+    'brisele': 1600,
+    'parīze': 1800,
+    'londona': 2000,
+    'madride': 3000,
+    'roma': 2100,
+    'vīne': 1300,
+    'prāga': 1200,
+    'budapešta': 1400,
+    'cirīhe': 1800,
+    'maskava': 920,
+};
+
   
   const normalizedCity = city.value.toLowerCase();
   const distance = cityDistances[normalizedCity] || 100; 
@@ -155,7 +177,6 @@ onMounted(async () => {
 });
 
 const redirectToStripeCheckout = async () => {
-  
   try {
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
@@ -166,7 +187,12 @@ const redirectToStripeCheckout = async () => {
       body: JSON.stringify({
         items: props.cartItems,
         deliveryCost: parseFloat(deliveryCost.value), 
-        totalAmount: totalPrice() 
+        totalAmount: totalPrice(),
+        serviceType: serviceType.value,
+        name: name.value,
+        address: address.value,
+        phone: phone.value,
+        email: email.value
       }),
     });
     const session = await response.json();
@@ -178,38 +204,25 @@ const redirectToStripeCheckout = async () => {
     console.error('Error creating checkout session:', error);
   }
 };
-
-
-
 </script>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-}
-h1 {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
-}
-.bg-white {
-  background-color: #ffffff;
-}
-.shadow-md {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-.shadow-lg {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-.w-full {
-  width: 100%;
-}
-.mt-3 {
-  margin-top: 0.75rem;
-}
-.mt-4 {
-  margin-top: 1rem;
-}
+  .container {
+    max-width: 1200px;
+  }
+  .bg-white {
+    background-color: #ffffff;
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  }
+  .rounded-lg {
+    border-radius: 0.75rem;
+  }
+  .w-full {
+    width: 100%;
+  }
+  .mt-6 {
+    margin-top: 1.5rem;
+  }
 </style>
