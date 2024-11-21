@@ -163,6 +163,7 @@ return [
         /*
          * Laravel Framework Service Providers...
          */
+        App\Providers\WebSocketServiceProvider::class,
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,

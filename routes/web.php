@@ -152,11 +152,17 @@ Route::prefix("admin")->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
-    Route::get('/chat/users', [ChatController::class, 'getAllUsers'])->name('chat.users');
-    Route::get('/chat/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
-    Route::get('/chat/user/{id}', [ChatController::class, 'getMessagesForUser'])->name('chat.user.messages');
+    Route::get('/api/user', function () {
+        return response()->json(Auth::user());
+    });
+
+    Route::prefix('chat')->group(function () {
+        Route::get('/', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/users', [ChatController::class, 'getAllUsers'])->name('chat.users');
+        Route::get('/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+        Route::get('/user/{id}', [ChatController::class, 'getMessagesForUser'])->name('chat.user.messages');
+        Route::post('/', [ChatController::class, 'store'])->name('chat.store');
+    });
 });
 
 Route::get('/test-broadcast', function () {

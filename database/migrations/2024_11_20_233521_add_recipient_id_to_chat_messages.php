@@ -6,20 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::table('chat_messages', function (Blueprint $table) {
-            $table->unsignedBigInteger('recipient_id')->after('user_id');
-            $table->foreign('recipient_id')->references('id')->on('users')->onDelete('cascade');
+            if (!Schema::hasColumn('chat_messages', 'recipient_id')) {
+                $table->unsignedBigInteger('recipient_id')->nullable()->after('user_id');
+                $table->foreign('recipient_id')
+                      ->references('id')
+                      ->on('users')
+                      ->onDelete('cascade');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down()
     {
         Schema::table('chat_messages', function (Blueprint $table) {

@@ -6,19 +6,15 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Http\UploadedFile;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as SpatieMedia;
 
 class User extends Authenticatable implements HasMedia
 {
-    use HasFactory, Notifiable, InteractsWithMedia;
+    use HasFactory, Notifiable, InteractsWithMedia, HasApiTokens;
 
-    protected $fillable = ["name", "email", "password", "role"];
+    protected $fillable = ["name", "email", "password", "role", "avatar"];
     protected $hidden = ["password", "remember_token"];
-
-    public function isAdmin()
-    {
-        return $this->role === "admin";
-    }
-
     protected function casts(): array
     {
         return [
@@ -27,10 +23,19 @@ class User extends Authenticatable implements HasMedia
         ];
     }
 
+    public function isAdmin()
+    {
+        return $this->role === "admin";
+    }
+
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection("avatar")->singleFile()->useDisk("public");
+        $this->addMediaCollection("avatar")
+            ->singleFile()
+            ->useDisk("public");
     }
+
+    protected $appends = ['avatar_url'];
 
     public function addAvatar(UploadedFile $file): void
     {
@@ -47,6 +52,12 @@ class User extends Authenticatable implements HasMedia
         }
         return null;
     }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('avatar') ?: null;
+    }
+
     // In your existing User model
     public function saves()
     {
