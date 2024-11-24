@@ -334,6 +334,7 @@
                     <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4">
                         <button
+                            @click="contactSeller"
                             class="flex-1 bg-purple-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-300"
                         >
                             Contact Seller
@@ -438,7 +439,10 @@ import axios from "axios";
 
 const page = usePage();
 const props = defineProps({
-    product: Object,
+    product: {
+        type: Object,
+        required: true
+    }
 });
 
 // Create a reactive product data object
@@ -521,9 +525,33 @@ const addToCart = (product) => {
     );
 };
 
-const contactSeller = (sellerId) => {
-    router.get(route("chat", { seller: sellerId }));
+const contactSeller = () => {
+    if (!page.props.auth.user) {
+        router.visit(route('login'));
+        return;
+    }
+    
+    if (!props.product?.user_id) {
+        console.error('Seller ID not found in product data');
+        return;
+    }
+    
+    const productInfo = {
+        id: props.product.id,
+        name: props.product.name,
+        price: props.product.price,
+        description: props.product.description,
+        photo: parsedPhotos.value?.[0] || null
+    };
+    
+    const encodedProduct = encodeURIComponent(JSON.stringify(productInfo));
+    
+    router.visit(route('chat.index', { 
+        sellerId: props.product.user_id,
+        product: encodedProduct
+    }));
 };
+
 
 const formatPrice = (price) => {
     const numPrice = Number(price);
@@ -537,6 +565,7 @@ const formatDate = (date) => {
         year: "numeric",
     }).format(new Date(date));
 };
+
 </script>
 
 <style scoped>

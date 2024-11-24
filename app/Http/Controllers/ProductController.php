@@ -347,9 +347,14 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('user')->findOrFail($id);
         return Inertia::render("Products/ProductShow", [
-            "product" => $product,
+            "product" => array_merge($product->toArray(), [
+                'seller' => [
+                    'id' => $product->user->id,
+                    'name' => $product->user->name
+                ]
+            ])
         ]);
     }
 

@@ -159,6 +159,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('chat')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('chat.index');
         Route::get('/users', [ChatController::class, 'getAllUsers'])->name('chat.users');
+        Route::get('/users/{id}', [ChatController::class, 'getUser'])->name('chat.users.show');
         Route::get('/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
         Route::get('/user/{id}', [ChatController::class, 'getMessagesForUser'])->name('chat.user.messages');
         Route::post('/', [ChatController::class, 'store'])->name('chat.store');
@@ -168,6 +169,10 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/test-broadcast', function () {
     broadcast(new \App\Events\MessageSent('Test message!'));
     return 'Broadcast sent!';
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat/{recipient}', [ChatController::class, 'show'])->name('chat.show');
 });
 
 

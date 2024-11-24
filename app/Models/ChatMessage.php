@@ -13,7 +13,8 @@ class ChatMessage extends Model
     protected $fillable = [
         'user_id',
         'recipient_id',
-        'message'
+        'message',
+        'product_data'
     ];
 
     protected $with = ['sender', 'recipient'];
@@ -27,5 +28,9 @@ class ChatMessage extends Model
     {
         return $this->belongsTo(User::class, 'recipient_id');
     }
+
+    protected $casts = [
+        'product_data' => 'array'
+    ];
 }
 

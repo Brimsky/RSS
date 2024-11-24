@@ -94,27 +94,45 @@
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   >
-                    <option value="">Select a category</option>
+                  <option value="">Select a category</option>
                     <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
                     <option value="clothing">Clothing</option>
-                    <!-- Add more categories as needed -->
+                    <option value="furniture">Furniture</option>
+                    <option value="books">Books</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="sports">Sports</option>
+                    <option value="home">Home</option>
+                    <option value="tools">Tools</option>
+                    <option value="toys">Toys</option>
+                    <option value="beauty">Beauty</option>
+                    <option value="health">Health</option>
                   </select>
                 </div>
                 <div>
                   <label for="subcategory" class="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
-                  <select
-                    v-model="form.subcategory"
-                    id="subcategory"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    required
-                  >
-                    <option value="">Select a sub category</option>
-                    <option value="console">Console</option>
-                    <option value="laptop">Laptop</option>
-                    <option value="smartphone">Smartphone</option>
-                    <!-- Add more subcategories as needed -->
-                  </select>
+                  <div v-if="form.category">
+                    <select
+                      v-model="form.subcategory"
+                      id="subcategory"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      required
+                    >
+                      <option value="">Select a sub category</option>
+                      <template v-for="(subcategories, categoryName) in subcategoryOptions" :key="categoryName">
+                        <option v-if="form.category === categoryName" v-for="subcategory in subcategories" :value="subcategory">{{ subcategory }}</option>
+                      </template>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <input
+                      v-if="form.subcategory === 'custom'"
+                      v-model="form.customSubcategory"
+                      type="text"
+                      id="customSubcategory"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2"
+                      placeholder="Enter a custom subcategory"
+                      required
+                    />
+                  </div>
                 </div>
                 <div>
                   <label for="condition" class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
@@ -193,6 +211,20 @@
 import { ref } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
+const subcategoryOptions = {
+  electronics: ['Console', 'Laptop', 'Smartphone', 'Camera', 'TV'],
+  clothing: ['Shirt', 'Pants', 'Dress', 'Shoes'],
+  furniture: ['Sofa', 'Bed', 'Table', 'Chair'],
+  books: ['Fiction', 'Non-Fiction', 'Textbook'],
+  automotive: ['Automotive'],
+  sports: ['Sports Equipment', 'Sports Apparel'],
+  home: ['Home Decor', 'Home Appliances'],
+  tools: ['Power Tools', 'Hand Tools'],
+  toys: ['Plush Toys', 'Board Games'],
+  beauty: ['Makeup', 'Skincare'],
+  health: ['Supplements', 'Medical Devices'],
+};
 
 const form = useForm({
   name: '',
