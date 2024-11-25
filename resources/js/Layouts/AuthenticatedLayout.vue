@@ -1,25 +1,21 @@
 <template>
-    <div>
-        <nav class="bg-white border-b border-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <nav class="bg-white border-b border-gray-100 sticky top-0 z-50 flex-shrink-0">
             <!-- Primary Navigation Menu -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-14 sm:h-16">
                     <div class="flex items-center">
                         <!-- Logo/Home Link -->
                         <div class="shrink-0 flex items-center">
                             <a href="/" class="group">
-                                <h1
-                                    class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent group-hover:from-purple-500 group-hover:to-blue-400 transition-all duration-300"
-                                >
+                                <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent group-hover:from-purple-500 group-hover:to-blue-400 transition-all duration-300">
                                     RSS
                                 </h1>
                             </a>
                         </div>
 
                         <!-- Navigation Links -->
-                        <div
-                            class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex"
-                        >
+                        <div class="hidden space-x-4 sm:space-x-8 sm:-my-px sm:ml-6 sm:ml-10 sm:flex">
                             <NavLink
                                 :href="route('dashboard')"
                                 :active="route().current('dashboard')"
@@ -233,8 +229,10 @@
         </nav>
 
         <!-- Page Content -->
-        <main class="min-h-screen bg-gray-50">
-            <slot />
+        <main class="flex-1 bg-gray-50 relative">
+            <div class="absolute inset-0 overflow-auto">
+                <slot />
+            </div>
         </main>
     </div>
 </template>
