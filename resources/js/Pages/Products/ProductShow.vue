@@ -157,38 +157,29 @@
                 <div class="space-y-4">
                     <!-- Main Photo -->
                     <div class="bg-white p-4 rounded-2xl shadow-sm">
-                        <div
-                            class="relative aspect-w-4 aspect-h-3 rounded-xl overflow-hidden"
-                        >
-                            <img
-                                :src="selectedPhoto || parsedPhotos[0]"
-                                :alt="product.name"
-                                class="w-full h-full object-cover"
-                            />
-                        </div>
+                        <img
+                            :src="mainPhoto"
+                            :alt="product.name"
+                            @error="handleImageError"
+                            class="w-full h-96 object-cover rounded-xl"
+                        />
                     </div>
 
                     <!-- Thumbnail Grid -->
-                    <div
-                        v-if="parsedPhotos.length > 1"
-                        class="grid grid-cols-4 sm:grid-cols-6 gap-4"
-                    >
-                        <button
+                    <div class="grid grid-cols-4 gap-4">
+                        <div
                             v-for="(photo, index) in parsedPhotos"
                             :key="index"
-                            @click="selectedPhoto = photo"
-                            class="relative aspect-square bg-white p-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
-                            :class="{
-                                'ring-2 ring-purple-500':
-                                    selectedPhoto === photo,
-                            }"
+                            class="aspect-square bg-white p-2 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-200"
+                            @click="selectedPhoto = index"
                         >
                             <img
                                 :src="photo"
-                                :alt="`${product.name} - Photo ${index + 1}`"
-                                class="w-full h-full object-cover rounded-md"
+                                :alt="`${product.name} - photo ${index + 1}`"
+                                @error="handleImageError"
+                                class="w-full h-full object-cover rounded-lg"
                             />
-                        </button>
+                        </div>
                     </div>
                 </div>
 
@@ -483,17 +474,25 @@ const saveProduct = async () => {
     }
 };
 
-// Update the save button in your template
-
 const parsedPhotos = computed(() => {
     if (!props.product?.photos) return [];
     try {
-        return JSON.parse(props.product.photos);
+        return typeof props.product.photos === 'string' 
+            ? JSON.parse(props.product.photos) 
+            : props.product.photos;
     } catch (e) {
-        console.error("Error parsing photos:", e);
+        console.error('Error parsing photos:', e);
         return [];
     }
 });
+
+const mainPhoto = computed(() => {
+    return parsedPhotos.value[0] || 'https://via.placeholder.com/400';
+});
+
+const handleImageError = (event) => {
+    event.target.src = 'https://via.placeholder.com/400';
+};
 
 const selectedPhoto = ref(null);
 const toastMessage = ref(null);

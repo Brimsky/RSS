@@ -127,9 +127,10 @@
                     <!-- Product Image -->
                     <div class="flex-shrink-0">
                         <img
-                            :src="product.image || '/images/placeholder.png'"
+                            :src="getProductPhoto(product.photos)"
                             :alt="product.name"
-                            class="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl"
+                            @error="handleImageError"
+                            class="w-24 h-24 object-cover rounded-lg"
                         />
                     </div>
 
@@ -345,6 +346,23 @@ const registerClick = async (productId) => {
     } catch (error) {
         console.error("Error registering click:", error);
     }
+};
+
+const getProductPhoto = (photos) => {
+    if (!photos) return 'https://via.placeholder.com/300';
+    try {
+        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+        return Array.isArray(parsedPhotos) && parsedPhotos.length > 0
+            ? parsedPhotos[0]
+            : 'https://via.placeholder.com/300';
+    } catch (e) {
+        console.error('Error parsing photos:', e);
+        return 'https://via.placeholder.com/300';
+    }
+};
+
+const handleImageError = (event) => {
+    event.target.src = 'https://via.placeholder.com/300';
 };
 
 // Initial filter and sort

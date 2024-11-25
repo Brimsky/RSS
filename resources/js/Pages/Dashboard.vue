@@ -111,25 +111,13 @@
                                         <!-- Product Info -->
                                         <div class="flex gap-4">
                                             <!-- Product Image -->
-                                            <div
-                                                class="relative w-32 h-32 flex-shrink-0"
-                                            >
-                                                <div
-                                                    class="absolute inset-0 rounded-lg overflow-hidden"
-                                                >
-                                                    <img
-                                                        :src="
-                                                            getFirstPhoto(
-                                                                product.photos,
-                                                            )
-                                                        "
-                                                        :alt="product.name"
-                                                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                                                        @error="
-                                                            handleImageError
-                                                        "
-                                                    />
-                                                </div>
+                                            <div class="relative w-32 h-32 flex-shrink-0">
+                                                <img
+                                                    :src="getFirstPhoto(product.photos)"
+                                                    :alt="product.name"
+                                                    @error="handleImageError"
+                                                    class="w-full h-full object-cover rounded-lg"
+                                                />
                                             </div>
 
                                             <div class="flex-grow min-w-0">
@@ -337,11 +325,7 @@
                                                 class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                                             >
                                                 <img
-                                                    :src="
-                                                        getFirstPhoto(
-                                                            product.photos,
-                                                        )
-                                                    "
+                                                    :src="getFirstPhoto(product.photos)"
                                                     class="w-12 h-12 object-cover rounded-md mx-3"
                                                 />
                                                 <div class="flex-grow">
@@ -429,11 +413,7 @@
                                                 class="aspect-w-16 aspect-h-9 rounded-t-lg overflow-hidden"
                                             >
                                                 <img
-                                                    :src="
-                                                        getFirstPhoto(
-                                                            product.photos,
-                                                        )
-                                                    "
+                                                    :src="getFirstPhoto(product.photos)"
                                                     :alt="product.name"
                                                     class="w-full h-48 object-cover"
                                                     @error="handleImageError"
@@ -522,15 +502,19 @@ const topPerformingProducts = computed(() => {
 // Methods
 const formatPrice = (price) => Number(price).toFixed(2);
 const getFirstPhoto = (photos) => {
+    if (!photos) return 'https://via.placeholder.com/300';
     try {
-        const parsedPhotos = JSON.parse(photos);
-        return parsedPhotos[0] || "https://via.placeholder.com/300";
-    } catch {
-        return "https://via.placeholder.com/300";
+        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+        return Array.isArray(parsedPhotos) && parsedPhotos.length > 0
+            ? parsedPhotos[0]
+            : 'https://via.placeholder.com/300';
+    } catch (e) {
+        console.error('Error parsing photos:', e);
+        return 'https://via.placeholder.com/300';
     }
 };
 const handleImageError = (event) => {
-    event.target.src = "https://via.placeholder.com/300";
+    event.target.src = 'https://via.placeholder.com/300';
 };
 const registerClick = async (productId) => {
     try {

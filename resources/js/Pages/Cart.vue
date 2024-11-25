@@ -5,7 +5,16 @@
         <!-- Cart Items -->
         <div class="md:w-2/3 space-y-6">
           <div v-for="(item, productId) in cartItems" :key="productId" class="bg-white shadow-lg rounded-lg p-6">
-            <div class="flex items-center">
+            <div class="flex items-center gap-6">
+              <!-- Product Image -->
+              <div class="flex-shrink-0">
+                <img
+                  :src="getFirstPhoto(item.photos)"
+                  :alt="item.name"
+                  @error="handleImageError"
+                  class="w-24 h-24 object-cover rounded-lg"
+                />
+              </div>
               <div class="flex-grow">
                 <h2 class="text-xl font-semibold text-gray-800">{{ item.name }}</h2>
                 <p class="text-gray-600 mt-1">{{ item.description }}</p>
@@ -99,6 +108,23 @@ const name = ref('');
 const address = ref('');
 const phone = ref('');
 const email = ref('');
+
+const getFirstPhoto = (photos) => {
+    if (!photos) return 'https://via.placeholder.com/300';
+    try {
+        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+        return Array.isArray(parsedPhotos) && parsedPhotos.length > 0
+            ? parsedPhotos[0]
+            : 'https://via.placeholder.com/300';
+    } catch (e) {
+        console.error('Error parsing photos:', e);
+        return 'https://via.placeholder.com/300';
+    }
+};
+
+const handleImageError = (event) => {
+    event.target.src = 'https://via.placeholder.com/300';
+};
 
 const totalPrice = () => {
   const itemsTotal = Object.values(props.cartItems).reduce(
