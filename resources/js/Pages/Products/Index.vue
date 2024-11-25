@@ -154,16 +154,22 @@ const formatDate = (date) => {
 };
 
 const getFirstPhoto = (photos) => {
+    if (!photos) return "https://via.placeholder.com/300";
+    
     try {
-        const parsedPhotos = JSON.parse(photos);
-        return parsedPhotos[0] || "https://via.placeholder.com/100";
+        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+        if (Array.isArray(parsedPhotos) && parsedPhotos.length > 0) {
+            return parsedPhotos[0];
+        }
     } catch (e) {
-        return "https://via.placeholder.com/100";
+        console.error('Error parsing photos:', e);
     }
+    
+    return "https://via.placeholder.com/300";
 };
 
 const handleImageError = (event) => {
-    event.target.src = "https://via.placeholder.com/100";
+    event.target.src = "https://via.placeholder.com/300";
 };
 
 const registerClick = async (productId) => {

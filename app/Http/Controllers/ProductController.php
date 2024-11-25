@@ -186,12 +186,14 @@ class ProductController extends Controller
     {
         $request->validate([
             "name" => "required|string|max:255",
-            "price" => "required|numeric",
+            "price" => "required|numeric|min:0.01",
             "description" => "nullable|string",
             "category" => "required|string",
             "subcategory" => "required|string",
             "condition" => "required|string",
             "location" => "required|string",
+            "photos" => "required|array|min:1",
+            "photos.*" => "required|image|mimes:jpeg,png,jpg,gif|max:2048"
         ]);
 
         $product = Product::create([
@@ -204,6 +206,15 @@ class ProductController extends Controller
             "location" => $request->location,
             "user_id" => Auth::id(),
         ]);
+
+        $photos = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('products', 'public');
+                $photos[] = '/storage/' . $path;
+            }
+            $product->update(['photos' => json_encode($photos)]);
+        }
 
         return redirect()
             ->route("products.index")
@@ -267,13 +278,14 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 "name" => "required|string|max:255",
-                "price" => "required|numeric",
+                "price" => "required|numeric|min:0.01",
                 "description" => "nullable|string",
                 "category" => "required|string",
                 "subcategory" => "required|string",
                 "condition" => "required|string",
                 "location" => "required|string",
-                "photos" => "nullable",
+                "photos" => "nullable|array",
+                "photos.*" => "nullable|image|mimes:jpeg,png,jpg,gif|max:2048"
             ]);
 
             Log::info("Validation passed", [
@@ -282,6 +294,16 @@ class ProductController extends Controller
             ]);
 
             $product->fill($validated);
+
+            if ($request->hasFile('photos')) {
+                $photos = [];
+                foreach ($request->file('photos') as $photo) {
+                    $path = $photo->store('products', 'public');
+                    $photos[] = $path;
+                }
+                $product->photos = $photos;
+            }
+
             $isDirty = $product->isDirty();
             $changedFields = $product->getDirty();
 

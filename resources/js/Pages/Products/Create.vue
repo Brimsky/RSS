@@ -24,7 +24,7 @@
                 :key="index" 
                 class="relative aspect-square bg-gray-100 rounded-lg overflow-hidden"
               >
-                <img :src="photo" alt="Product photo" class="w-full h-full object-cover" />
+                <img :src="photoPreviewUrls[index]" alt="Product photo" class="w-full h-full object-cover" />
                 <button 
                   @click="removePhoto(index)" 
                   class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors duration-200"
@@ -41,16 +41,16 @@
                 <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
+                <input
+                  type="file"
+                  ref="fileInput"
+                  @change="handlePhotoUpload"
+                  accept="image/*"
+                  multiple
+                  class="hidden"
+                />
               </div>
             </div>
-            <input
-              ref="fileInput"
-              type="file"
-              @change="handlePhotoUpload"
-              accept="image/*"
-              multiple
-              class="hidden"
-            />
           </div>
 
           <!-- Right Column: Listing Details -->
@@ -79,11 +79,17 @@
                       v-model="form.price"
                       type="number"
                       step="0.01"
+                      min="0.01"
                       id="price"
                       class="w-full pl-7 pr-12 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      :class="{ 'border-red-500': priceError }"
                       placeholder="0.00"
                       required
+                      @input="validatePrice"
                     />
+                    <div v-if="priceError" class="text-red-500 text-sm mt-1">
+                      {{ priceError }}
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -119,7 +125,11 @@
                     >
                       <option value="">Select a sub category</option>
                       <template v-for="(subcategories, categoryName) in subcategoryOptions" :key="categoryName">
-                        <option v-if="form.category === categoryName" v-for="subcategory in subcategories" :value="subcategory">{{ subcategory }}</option>
+                        <template v-if="form.category === categoryName">
+                          <option v-for="subcategory in subcategories" :key="subcategory" :value="subcategory">
+                            {{ subcategory }}
+                          </option>
+                        </template>
                       </template>
                       <option value="custom">Custom</option>
                     </select>
@@ -226,51 +236,104 @@ const subcategoryOptions = {
   health: ['Supplements', 'Medical Devices'],
 };
 
+const fileInput = ref(null);
+const productAdded = ref(false);
+const priceError = ref('');
+const photoPreviewUrls = ref([]);
+
 const form = useForm({
   name: '',
   price: '',
   description: '',
   category: '',
   subcategory: '',
-  location: '',
+  customSubcategory: '',
   condition: '',
+  location: '',
   photos: []
 });
 
-const productAdded = ref(false);
-const fileInput = ref(null);
+const validatePrice = () => {
+  const price = parseFloat(form.price);
+  if (isNaN(price) || price <= 0) {
+    priceError.value = 'Price must be greater than 0';
+    return false;
+  }
+  priceError.value = '';
+  return true;
+};
 
 const triggerFileInput = () => {
   fileInput.value.click();
 };
 
 const handlePhotoUpload = (event) => {
-  const files = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.photos.push(e.target.result);
-    };
-    reader.readAsDataURL(file);
+  const files = Array.from(event.target.files);
+  
+  // Validate file types and sizes
+  const invalidFiles = files.filter(file => {
+    const isValidType = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'].includes(file.type);
+    const isValidSize = file.size <= 2 * 1024 * 1024; // 2MB limit
+    return !isValidType || !isValidSize;
+  });
+
+  if (invalidFiles.length > 0) {
+    alert('Please only upload images (JPG, PNG, GIF) under 2MB in size');
+    return;
   }
+
+  // Add files to form and create preview URLs
+  files.forEach(file => {
+    form.photos.push(file);
+    photoPreviewUrls.value.push(URL.createObjectURL(file));
+  });
 };
 
 const removePhoto = (index) => {
   form.photos.splice(index, 1);
+  URL.revokeObjectURL(photoPreviewUrls.value[index]);
+  photoPreviewUrls.value.splice(index, 1);
 };
 
 const submitForm = () => {
+  if (!validatePrice()) {
+    return;
+  }
+
+  if (!form.photos || form.photos.length === 0) {
+    alert('Please add at least one photo');
+    return;
+  }
+
+  // Create FormData and append all form fields
+  const formData = new FormData();
+  formData.append('name', form.name);
+  formData.append('price', form.price);
+  formData.append('description', form.description);
+  formData.append('category', form.category);
+  formData.append('subcategory', form.subcategory);
+  formData.append('condition', form.condition);
+  formData.append('location', form.location);
+  
+  // Append photos
+  form.photos.forEach((photo, index) => {
+    formData.append(`photos[${index}]`, photo);
+  });
+
+  // Post the form using Inertia with FormData
   form.post(route('products.store'), {
-    preserveScroll: true,
+    forceFormData: true,
     onSuccess: () => {
       productAdded.value = true;
       setTimeout(() => {
-        productAdded.value = false;
-      }, 5000); // Hide the success message after 5 seconds
+        window.location.href = route('products.index');
+      }, 2000);
     },
-    onError: () => {
-      productAdded.value = false;
+    onError: (errors) => {
+      console.error(errors);
+      if (errors.photos) {
+        alert('Error uploading photos. Please try again.');
+      }
     }
   });
 };
