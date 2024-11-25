@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -245,6 +247,11 @@ class ProductController extends Controller
                 );
         }
 
+        // Decode photos if they're JSON encoded
+        if (is_string($product->photos)) {
+            $product->photos = json_decode($product->photos, true) ?? [];
+        }
+
         return Inertia::render("Products/Edit", [
             "product" => $product,
         ]);
@@ -252,95 +259,67 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        Log::info("Accessing update method", [
-            "product_id" => $product->id,
-            "user_id" => Auth::id(),
-            "product_user_id" => $product->user_id,
-            "request_data" => $request->all(),
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0.01',
+            'category' => 'required|string',
+            'subcategory' => 'required|string',
+            'condition' => 'required|string',
+            'location' => 'required|string',
+            'photos' => 'required|array|min:1',
+            'photos.*' => 'required|string'
+        ], [
+            'photos.required' => 'At least one photo is required',
+            'photos.min' => 'At least one photo is required',
+            'price.min' => 'Price must be greater than 0'
         ]);
 
-        if (
-            Auth::user()->role !== "admin" &&
-            $product->user_id !== Auth::id()
-        ) {
-            Log::warning("Unauthorized update attempt", [
-                "user_id" => Auth::id(),
-                "product_id" => $product->id,
-            ]);
-            return redirect()
-                ->route("products.index")
-                ->with(
-                    "error",
-                    "You do not have permission to update this product."
-                );
-        }
-
         try {
-            $validated = $request->validate([
-                "name" => "required|string|max:255",
-                "price" => "required|numeric|min:0.01",
-                "description" => "nullable|string",
-                "category" => "required|string",
-                "subcategory" => "required|string",
-                "condition" => "required|string",
-                "location" => "required|string",
-                "photos" => "nullable|array",
-                "photos.*" => "nullable|image|mimes:jpeg,png,jpg,gif|max:2048"
-            ]);
+            DB::beginTransaction();
 
-            Log::info("Validation passed", [
-                "product_id" => $product->id,
-                "validated_data" => $validated,
-            ]);
-
-            $product->fill($validated);
-
-            if ($request->hasFile('photos')) {
-                $photos = [];
-                foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('products', 'public');
-                    $photos[] = $path;
+            // Process photos - decode base64 images and store them
+            $photos = [];
+            foreach ($request->photos as $photo) {
+                // If it's an existing photo URL, keep it
+                if (filter_var($photo, FILTER_VALIDATE_URL) || !str_contains($photo, 'base64')) {
+                    $photos[] = $photo;
+                    continue;
                 }
-                $product->photos = $photos;
+
+                // Process new base64 image
+                $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $photo));
+                $fileName = 'products/' . uniqid() . '.jpg';
+                
+                // Store the image
+                Storage::disk('public')->put($fileName, $imageData);
+                $photos[] = $fileName;
             }
 
-            $isDirty = $product->isDirty();
-            $changedFields = $product->getDirty();
-
-            $product->save();
-
-            Log::info("Product update attempt completed", [
-                "product_id" => $product->id,
-                "is_dirty" => $isDirty,
-                "changed_fields" => $changedFields,
+            // Update product with all fields including processed photos
+            $product->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'price' => $request->price,
+                'category' => $request->category,
+                'subcategory' => $request->subcategory,
+                'condition' => $request->condition,
+                'location' => $request->location,
+                'photos' => $photos
             ]);
 
-            if ($isDirty) {
-                return redirect()
-                    ->route("products.index")
-                    ->with("success", "Product updated successfully.");
-            } else {
-                return redirect()
-                    ->route("products.index")
-                    ->with("info", "No changes were made to the product.");
-            }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error("Validation failed", [
-                "product_id" => $product->id,
-                "errors" => $e->errors(),
-            ]);
-            return back()->withErrors($e->errors())->withInput();
+            DB::commit();
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Product updated successfully');
+
         } catch (\Exception $e) {
-            Log::error("Error updating product", [
-                "product_id" => $product->id,
-                "error" => $e->getMessage(),
-            ]);
+            DB::rollBack();
+            \Log::error('Product update failed: ' . $e->getMessage());
+            
             return back()
-                ->withErrors([
-                    "update_error" =>
-                        "An error occurred while updating the product: " .
-                        $e->getMessage(),
-                ])
+                ->withErrors(['update_error' => 'Failed to update product. Please try again.'])
                 ->withInput();
         }
     }

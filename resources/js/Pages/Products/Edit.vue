@@ -16,6 +16,10 @@
         <h1 class="text-3xl font-bold text-center mb-12">Edit Listing</h1>
 
         <form @submit.prevent="submitForm" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Success Message -->
+          <div v-if="productUpdated" class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              <span class="block sm:inline">Product updated successfully! Redirecting...</span>
+          </div>
           <!-- Left Column: Photos Section -->
           <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-xl font-semibold mb-4">Photos</h2>
@@ -45,13 +49,17 @@
               </div>
             </div>
             <input
-              ref="fileInput"
-              type="file"
-              @change="handlePhotoUpload"
-              accept="image/*"
-              multiple
-              class="hidden"
+                ref="fileInput"
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                multiple
+                class="hidden"
+                @change="handlePhotoUpload"
             />
+
+          </div>
+          <div v-if="form.errors.photos" class="mt-2 text-sm text-red-600">
+              {{ form.errors.photos }}
           </div>
 
           <!-- Right Column: Listing Details -->
@@ -80,11 +88,17 @@
                       v-model="form.price"
                       type="number"
                       step="0.01"
+                      min="0.01"
                       id="price"
                       class="w-full pl-7 pr-12 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      :class="{ 'border-red-500': priceError }"
                       placeholder="0.00"
                       required
+                      @input="validatePrice"
                     />
+                    <div v-if="priceError" class="text-red-500 text-sm mt-1">
+                      {{ priceError }}
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -97,12 +111,19 @@
                   >
                     <option value="">Select a category</option>
                     <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
                     <option value="clothing">Clothing</option>
-                    <!-- Add more categories as needed -->
+                    <option value="furniture">Furniture</option>
+                    <option value="books">Books</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="sports">Sports</option>
+                    <option value="home">Home</option>
+                    <option value="tools">Tools</option>
+                    <option value="toys">Toys</option>
+                    <option value="beauty">Beauty</option>
+                    <option value="health">Health</option>
                   </select>
                 </div>
-                <div>
+                <div v-if="form.category">
                   <label for="subcategory" class="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
                   <select
                     v-model="form.subcategory"
@@ -111,11 +132,24 @@
                     required
                   >
                     <option value="">Select a sub category</option>
-                    <option value="console">Console</option>
-                    <option value="laptop">Laptop</option>
-                    <option value="smartphone">Smartphone</option>
-                    <!-- Add more subcategories as needed -->
+                    <template v-for="(subcategories, categoryName) in subcategoryOptions" :key="categoryName">
+                      <template v-if="form.category === categoryName">
+                        <option v-for="subcategory in subcategories" :key="subcategory" :value="subcategory">
+                          {{ subcategory }}
+                        </option>
+                      </template>
+                    </template>
+                    <option value="custom">Custom</option>
                   </select>
+                  <input
+                    v-if="form.subcategory === 'custom'"
+                    v-model="form.customSubcategory"
+                    type="text"
+                    id="customSubcategory"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2"
+                    placeholder="Enter a custom subcategory"
+                    required
+                  />
                 </div>
                 <div>
                   <label for="condition" class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
@@ -200,82 +234,145 @@ import { useForm, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
-  product: Object,
+    product: {
+        type: Object,
+        required: true,
+    },
 });
 
-const productLoaded = ref(false);
 const productUpdated = ref(false);
 const fileInput = ref(null);
+const priceError = ref('');
+const photoPreviewUrls = ref([]);
 
+const subcategoryOptions = {
+    electronics: ['Smartphones', 'Laptops', 'Tablets', 'Gaming Consoles', 'Cameras', 'Audio Equipment', 'Other Electronics'],
+    clothing: ['Shirts', 'Pants', 'Dresses', 'Shoes', 'Accessories', 'Outerwear', 'Sportswear'],
+    furniture: ['Tables', 'Chairs', 'Sofas', 'Beds', 'Storage', 'Lighting', 'Other Furniture'],
+    books: ['Fiction', 'Non-Fiction', 'Textbooks', 'Comics', 'Magazines', 'Other Books'],
+    automotive: ['Cars', 'Car Parts', 'Motorcycles', 'Tools', 'Accessories', 'Other Automotive'],
+    sports: ['Equipment', 'Clothing', 'Shoes', 'Accessories', 'Other Sports'],
+    home: ['Decor', 'Kitchen', 'Bath', 'Bedding', 'Other Home'],
+    tools: ['Power Tools', 'Hand Tools', 'Garden Tools', 'Other Tools'],
+    toys: ['Games', 'Puzzles', 'Educational', 'Outdoor', 'Other Toys'],
+    beauty: ['Skincare', 'Makeup', 'Hair Care', 'Fragrances', 'Other Beauty'],
+    health: ['Vitamins', 'Personal Care', 'Medical Equipment', 'Other Health']
+};
+
+// Initialize form with product data
 const form = useForm({
-  name: '',
-  description: '',
-  price: '',
-  category: '',
-  subcategory: '',
-  location: '',
-  condition: '',
-  photos: undefined, // Use undefined as the default value
+    name: props.product.name,
+    price: props.product.price,
+    category: props.product.category,
+    subcategory: props.product.subcategory,
+    customSubcategory: '',
+    condition: props.product.condition,
+    location: props.product.location,
+    description: props.product.description,
+    photos: [],
+    _method: 'PUT'
 });
 
-watch(() => props.product, (newProduct) => {
-  if (newProduct) {
-    form.name = newProduct.name || '';
-    form.description = newProduct.description || '';
-    form.price = newProduct.price || '';
-    form.category = newProduct.category || '';
-    form.subcategory = newProduct.subcategory || '';
-    form.location = newProduct.location || '';
-    form.condition = newProduct.condition || '';
-    
-    // Only set photos if they exist and are not an empty array
-    if (newProduct.photos && Array.isArray(newProduct.photos) && newProduct.photos.length > 0) {
-      form.photos = newProduct.photos;
-    } else {
-      form.photos = undefined;
+// Watch for subcategory changes
+watch(() => form.subcategory, (newValue) => {
+    if (newValue !== 'custom') {
+        form.customSubcategory = '';
     }
-    
-    productLoaded.value = true;
-  }
-}, { immediate: true });
-
-onMounted(() => {
-  console.log('Product data:', props.product);
 });
+
+const validatePrice = () => {
+    const price = parseFloat(form.price);
+    if (isNaN(price) || price <= 0) {
+        priceError.value = 'Price must be greater than 0';
+        return false;
+    }
+    if (price > 1000000) {
+        priceError.value = 'Price cannot exceed 1,000,000';
+        return false;
+    }
+    priceError.value = '';
+    return true;
+};
+
+const triggerFileInput = () => {
+    fileInput.value.click();
+};
+
+const handlePhotoUpload = async (event) => {
+    const newFiles = Array.from(event.target.files);
+    
+    // Validate file types and sizes
+    const invalidFiles = newFiles.filter(file => {
+        const isValidType = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+        const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+        return !isValidType || !isValidSize;
+    });
+
+    if (invalidFiles.length > 0) {
+        alert('Please only upload image files (JPG, PNG, GIF) under 5MB');
+        return;
+    }
+
+    // Convert files to base64
+    for (const file of newFiles) {
+        try {
+            const base64String = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            
+            form.photos.push(base64String);
+            photoPreviewUrls.value.push(base64String);
+        } catch (error) {
+            console.error('Error processing file:', error);
+        }
+    }
+
+    // Clear the input
+    event.target.value = '';
+};
+
+const removePhoto = (index) => {
+    form.photos.splice(index, 1);
+    photoPreviewUrls.value.splice(index, 1);
+};
 
 const submitForm = () => {
-  if (!props.product) {
-    console.error('Cannot submit form: Product data is not available');
-    return;
-  }
-  
-  // Create a new object with only the fields that have changed
-  const formData = Object.keys(form).reduce((acc, key) => {
-    if (form[key] !== props.product[key]) {
-      acc[key] = form[key];
+    if (!validatePrice()) {
+        return;
     }
-    return acc;
-  }, {});
 
-  // If photos is undefined or an empty array, explicitly set it to null
-  if (!formData.photos || (Array.isArray(formData.photos) && formData.photos.length === 0)) {
-    formData.photos = null;
-  }
+    // If custom subcategory is selected, use that value
+    if (form.subcategory === 'custom' && form.customSubcategory) {
+        form.subcategory = form.customSubcategory;
+    }
 
-  console.log('Submitting form data:', formData);  // Log the data being sent
+    // Ensure we have at least one photo
+    if (form.photos.length === 0) {
+        alert('Please add at least one photo');
+        return;
+    }
 
-  form.put(route('products.update', props.product.id), formData, {
-    preserveScroll: true,
-    onSuccess: (page) => {
-      productUpdated.value = true;
-      console.log('Product updated successfully', page);
-      // Redirect to products index page
-      window.location.href = route('products.index');
-    },
-    onError: (errors) => {
-      productUpdated.value = false;
-      console.error('Form submission errors:', errors);
-    },
-  });
+    form.post(route('products.update', props.product.id), {
+        onSuccess: () => {
+            productUpdated.value = true;
+            setTimeout(() => {
+                window.location.href = route('products.index');
+            }, 2000);
+        },
+        preserveScroll: true,
+        preserveState: true,
+    });
 };
+
+onMounted(() => {
+    // Handle photos initialization
+    if (props.product.photos) {
+        const photos = Array.isArray(props.product.photos) ? props.product.photos : [];
+        form.photos = photos;
+        photoPreviewUrls.value = photos;
+    }
+});
 </script>
