@@ -194,9 +194,20 @@
                         >
                             {{ product.name }}
                         </h1>
-                        <p class="text-3xl font-bold text-purple-600">
-                            ${{ formatPrice(product.price) }}
-                        </p>
+                        <div class="flex items-center justify-between">
+                            <p class="text-3xl font-bold text-purple-600">
+                                ${{ formatPrice(product.price) }}
+                            </p>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <span class="text-purple-600 font-medium">{{ product.seller.name.charAt(0).toUpperCase() }}</span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">Seller</p>
+                                    <p class="text-sm font-medium text-purple-600">{{ product.seller.name }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Quick Info -->
