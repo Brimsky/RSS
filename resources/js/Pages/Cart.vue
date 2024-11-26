@@ -8,12 +8,25 @@
             <div class="flex items-center gap-6">
               <!-- Product Image -->
               <div class="flex-shrink-0">
-                <img
-                  :src="getFirstPhoto(item.photos)"
-                  :alt="item.name"
-                  @error="handleImageError"
-                  class="w-24 h-24 object-cover rounded-lg"
-                />
+                <div class="relative group">
+                  <img
+                    :src="getFirstPhoto(item.photos)"
+                    :alt="item.name"
+                    @error="handleImageError"
+                    class="w-24 h-24 object-cover rounded-lg cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <!-- Thumbnail Grid -->
+                  <div v-if="parsedPhotos(item.photos).length > 1" class="hidden group-hover:grid absolute top-full left-0 mt-2 grid-cols-3 gap-1 bg-white p-2 rounded-lg shadow-lg z-10">
+                    <img
+                      v-for="(photo, index) in parsedPhotos(item.photos)"
+                      :key="index"
+                      :src="photo"
+                      :alt="`${item.name} - photo ${index + 1}`"
+                      @error="handleImageError"
+                      class="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-75 transition-opacity"
+                    />
+                  </div>
+                </div>
               </div>
               <div class="flex-grow">
                 <h2 class="text-xl font-semibold text-gray-800">{{ item.name }}</h2>
@@ -98,7 +111,10 @@ import { loadStripe } from '@stripe/stripe-js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
-  cartItems: Object,
+  cartItems: {
+    type: Object,
+    required: true
+  }
 });
 
 const city = ref('');
@@ -109,21 +125,27 @@ const address = ref('');
 const phone = ref('');
 const email = ref('');
 
+const parsedPhotos = (photos) => {
+  if (!photos) return [];
+  try {
+    return typeof photos === 'string' 
+      ? JSON.parse(photos)
+      : Array.isArray(photos) 
+        ? photos 
+        : [];
+  } catch (error) {
+    console.error('Error parsing photos:', error);
+    return [];
+  }
+};
+
 const getFirstPhoto = (photos) => {
-    if (!photos) return 'https://via.placeholder.com/300';
-    try {
-        const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
-        return Array.isArray(parsedPhotos) && parsedPhotos.length > 0
-            ? parsedPhotos[0]
-            : 'https://via.placeholder.com/300';
-    } catch (e) {
-        console.error('Error parsing photos:', e);
-        return 'https://via.placeholder.com/300';
-    }
+  const parsed = parsedPhotos(photos);
+  return parsed.length > 0 ? parsed[0] : '/placeholder-image.jpg';
 };
 
 const handleImageError = (event) => {
-    event.target.src = 'https://via.placeholder.com/300';
+  event.target.src = '/placeholder-image.jpg';
 };
 
 const totalPrice = () => {
@@ -188,7 +210,7 @@ const calculateDeliveryCost = () => {
     'budapešta': 1400,
     'cirīhe': 1800,
     'maskava': 920,
-};
+  };
 
   
   const normalizedCity = city.value.toLowerCase();
