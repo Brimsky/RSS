@@ -541,6 +541,12 @@ const contactSeller = () => {
         return;
     }
     
+    // Prevent messaging yourself
+    if (props.product?.user_id === page.props.auth.user.id) {
+        alert('You cannot message yourself about your own product');
+        return;
+    }
+    
     if (!props.product?.user_id) {
         console.error('Seller ID not found in product data');
         return;

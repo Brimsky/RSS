@@ -69,13 +69,20 @@ class ChatController extends Controller
             'product_data' => 'nullable|array'
         ]);
 
+        // Prevent messaging yourself
+        if ($validated['recipient_id'] == auth()->id()) {
+            return response()->json(['error' => 'You cannot send messages to yourself'], 422);
+        }
+
         try {
             $message = ChatMessage::create([
                 'user_id' => auth()->id(),
                 'recipient_id' => $validated['recipient_id'],
                 'message' => $validated['message'],
                 'product_data' => $request->product_data ? json_encode($request->product_data) : null,
-                'is_first_message' => true 
+                'is_first_message' => !ChatMessage::where('user_id', auth()->id())
+                    ->where('recipient_id', $validated['recipient_id'])
+                    ->exists()
             ]);
 
             Log::info('Message created', ['message' => $message]);
