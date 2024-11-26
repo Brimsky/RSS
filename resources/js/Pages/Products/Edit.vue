@@ -243,7 +243,6 @@ const props = defineProps({
 const productUpdated = ref(false);
 const fileInput = ref(null);
 const priceError = ref('');
-const photoPreviewUrls = ref([]);
 
 const subcategoryOptions = {
     electronics: ['Smartphones', 'Laptops', 'Tablets', 'Gaming Consoles', 'Cameras', 'Audio Equipment', 'Other Electronics'],
@@ -324,7 +323,6 @@ const handlePhotoUpload = async (event) => {
             });
             
             form.photos.push(base64String);
-            photoPreviewUrls.value.push(base64String);
         } catch (error) {
             console.error('Error processing file:', error);
         }
@@ -336,7 +334,6 @@ const handlePhotoUpload = async (event) => {
 
 const removePhoto = (index) => {
     form.photos.splice(index, 1);
-    photoPreviewUrls.value.splice(index, 1);
 };
 
 const submitForm = () => {
@@ -372,7 +369,6 @@ onMounted(() => {
     if (props.product.photos) {
         const photos = Array.isArray(props.product.photos) ? props.product.photos : [];
         form.photos = photos;
-        photoPreviewUrls.value = photos;
     }
 });
 </script>

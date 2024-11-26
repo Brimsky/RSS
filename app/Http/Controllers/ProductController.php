@@ -34,6 +34,7 @@ class ProductController extends Controller
             ->when($subcategory, function ($query, $subcategory) {
                 return $query->where("subcategory", $subcategory);
             })
+            ->with('user:id,name')  // Include seller information
             ->get();
 
         $categories = Product::distinct("category")
@@ -77,6 +78,7 @@ class ProductController extends Controller
     {
         $products = Product::where("category", $category)
             ->where("subcategory", $subcategory)
+            ->with('user:id,name')  // Include seller information
             ->get();
 
         return Inertia::render("Products/ListingProducts", [

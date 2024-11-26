@@ -142,37 +142,18 @@
                             >
                                 {{ product.name }}
                             </h2>
-                            <div class="flex items-center">
-                                <!-- Price -->
-                                <p class="text-lg font-bold text-purple-600">
-                                    ${{ formatPrice(product.price) }}
-                                </p>
-                                <!-- Arrow Icon -->
-                                <svg
-                                    class="w-5 h-5 ml-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M9 5l7 7-7 7"
-                                    />
-                                </svg>
+                            <div class="text-lg font-bold text-purple-600">
+                                €{{ formatPrice(product.price) }}
                             </div>
                         </div>
-
-                        <!-- Product Description -->
-                        <p class="mt-1 text-sm text-gray-500 line-clamp-2">
-                            {{ product.description }}
-                        </p>
-
-                        <!-- Product Details -->
-                        <div
-                            class="mt-2 flex items-center space-x-4 text-sm text-gray-500"
-                        >
+                        <div class="mt-1 flex items-center text-sm text-gray-500">
+                            <span class="truncate">{{ product.description }}</span>
+                        </div>
+                        <div class="mt-2 flex items-center text-sm">
+                            <span class="text-gray-600 mr-2">Seller:</span>
+                            <span class="font-medium text-purple-600">{{ product.user.name }}</span>
+                        </div>
+                        <div class="mt-2 flex items-center text-sm text-gray-500">
                             <div class="flex items-center">
                                 <svg
                                     class="w-4 h-4 mr-1"
